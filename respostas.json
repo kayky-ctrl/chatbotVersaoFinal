@@ -1,0 +1,50 @@
+[
+  {
+    "palavras_chave": ["voce", "brilhante", "tempo"],
+    "resposta": "Posso me mexer… e falar?!",
+    "acoes": ["mover_frente", "mover_tras"]
+  },
+  {
+    "palavras_chave": ["claro", "seguir", "consciencia","garota"],
+    "acoes": ["abrir_porta"],
+    "resposta": "Mas… onde está essa tal consciência?"
+  },
+  {
+    "palavras_chave": ["robo", "laboratorio", "criações","quebrando"],
+    "resposta": "Eu não quebrei seu laboratório!! Não por querer, pelo menos… eu só queria seguir a fada, ela disse que você anda precisando de companhia…"
+  },
+  {
+    "palavras_chave": ["preciso", "companhia", "amigos","embora"],
+    "resposta": "Ah, agora eu entendi! Você é mal educada! Talvez por isso não tenha amigos."
+  },
+  {
+    "palavras_chave": ["atrevida", "desastrada", "quebra", "tudo", "consertar", "relogios"],
+    "resposta": "Diga aos seus relógios que não me importo com seus tiques e taques! Seu grilo da consciência deve estar dando defeito,  tudo o que você sabe fazer é reclamar.",
+    "acoes": ["girar"]
+  },
+  {
+    "palavras_chave": ["ensinar", "senhorita", "melhor"],
+    "resposta": "Só acho que você deveria tratar os outros com mais gentileza, não é porque eu sou diferente de você que eu sou inferior."
+  },
+  {
+    "palavras_chave": ["voce", "sabe", "nada", "mim"],
+    "resposta": "E você nem me deu chance. Não me disse nem seu nome."
+  },
+  {
+    "palavras_chave": ["meu nome","julieta","escrevi"],
+    "resposta": "Sim! Viu? Já estamos nos entendendo! Agora, bem que você podia me apresentar aos seus relógios, né…"
+  },
+  {
+    "palavras_chave": ["acho", "ouviram", "bem"],
+    "resposta": "Então agora eu posso te chamar de mãe?"
+  },
+  {
+    "palavras_chave":["opa", "vamos", "calma"],
+    "resposta": "Tudo bem então kkkkkkkkk",
+    "acoes": ["andar_3s"]
+  },
+  {
+    "palavras_chave": ["bom", "tarde", "boa noite"],
+    "resposta": "Boa noite, Giulietta!"
+  }
+]
