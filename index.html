@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Robô Premium</title>
+  <title>Robô Gigante</title>
   <style>
     * {
       margin: 0;
@@ -18,34 +18,26 @@
       min-height: 100vh;
       background: #0a0a23;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
     }
 
-    .robot-face {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      perspective: 1000px;
-    }
-
-    .visor {
-      width: 280px;
-      height: 160px;
-      background: linear-gradient(155deg, #00b4db, #00688b);
-      border-radius: 35px;
+    .robot-visor {
+      width: 800px;
+      height: 480px;
+      background: linear-gradient(135deg, #00c6fb, #005bea);
+      border-radius: 80px;
       box-shadow:
-        inset 0 0 25px rgba(0, 0, 0, 0.6),
-        0 0 40px rgba(0, 180, 219, 0.8);
+        inset 0 0 80px rgba(0, 0, 0, 0.8),
+        0 0 160px rgba(0, 198, 251, 0.8);
       position: relative;
       overflow: hidden;
-      border: 5px solid #222;
+      border: 15px solid #2a2a2a;
       display: flex;
       justify-content: center;
       align-items: center;
-      transform-style: preserve-3d;
     }
 
-    .visor::before {
+    .robot-visor::before {
       content: '';
       position: absolute;
       top: -50%;
@@ -55,12 +47,10 @@
       background: linear-gradient(
         to bottom right,
         rgba(255, 255, 255, 0.4) 0%,
-        rgba(255, 255, 255, 0) 50%,
-        rgba(255, 255, 255, 0.4) 100%
+        rgba(255, 255, 255, 0) 60%
       );
       transform: rotate(30deg);
       animation: shine 5s infinite linear;
-      opacity: 0.7;
     }
 
     @keyframes shine {
@@ -68,185 +58,74 @@
       100% { transform: translateX(100%) rotate(30deg); }
     }
 
-    .eye {
-      width: 45px;
-      height: 65px;
-      background: #00ffff;
-      border-radius: 50%;
-      margin: 0 25px;
-      box-shadow: 
-        0 0 15px #00ffff, 
-        0 0 30px #00ffff,
-        inset 0 0 10px rgba(255, 255, 255, 0.8);
-      animation: blink 6s infinite, glow 3s infinite alternate;
-      position: relative;
-      z-index: 2;
+    .eyes-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 160px;
     }
 
-    .eye::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.8);
+    .eye {
+      width: 160px;
+      height: 200px;
+      background: #00ffff;
       border-radius: 50%;
-      top: 15px;
-      left: 10px;
-      filter: blur(2px);
+      box-shadow: 
+        0 0 60px #00ffff,
+        0 0 120px #00ffff,
+        inset 0 0 30px rgba(255, 255, 255, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eye-pupil {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: rgba(107, 128, 237, 0.95);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      filter: blur(5px);
+      animation: blink 6s infinite ease-in-out;
     }
 
     @keyframes blink {
-      0%, 42%, 45%, 46%, 54%, 55%, 58%, 100% { height: 65px; }
-      43%, 44%, 56%, 57% { height: 10px; }
-      50% { height: 45px; }
+      0%, 40%, 44%, 48%, 52%, 56%, 60%, 100% { 
+        height: 70px;
+        top: 50%;
+      }
+      42%, 46%, 50%, 54%, 58% { 
+        height: 20px;
+        top: calc(50% + 30px);
+      }
     }
 
-    @keyframes glow {
-      0% { box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff; }
-      50% { box-shadow: 0 0 20px #00ffff, 0 0 45px #00ffff; }
-      100% { box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff; }
-    }
-
-    .mouth-container {
-      position: relative;
-      width: 220px;
-      height: 80px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .mouth {
-      width: 180px;
-      height: 60px;
-      background: #111;
-      border-radius: 0 0 30px 30px;
-      position: relative;
-      overflow: hidden;
-      border: 4px solid #333;
-      box-shadow: 
-        inset 0 -15px 30px rgba(0, 0, 0, 0.7),
-        0 10px 30px rgba(255, 50, 50, 0.4);
-      transform-style: preserve-3d;
-    }
-
-    .mouth-inner {
+    .eye-reflection {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to top, #ff1a1a, #ff4d4d);
-      border-radius: 0 0 25px 25px;
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-end;
-      padding-bottom: 12px;
-      box-sizing: border-box;
-    }
-
-    .mouth-segment {
-      width: 10px;
-      background: #111;
-      margin: 0 1px;
-      border-radius: 4px 4px 0 0;
-      transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
-      position: relative;
-      z-index: 2;
-      box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .mouth-glow {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(ellipse at center, rgba(255, 50, 50, 0.6) 0%, transparent 70%);
-      border-radius: 0 0 25px 25px;
-      animation: glow-pulse 2s infinite alternate;
-    }
-
-    @keyframes glow-pulse {
-      0% { opacity: 0.3; }
-      100% { opacity: 0.7; }
-    }
-
-    .mouth-tech-lines {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        linear-gradient(to right, rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
-      background-size: 15px 15px;
-      opacity: 0.4;
-    }
-
-    .mouth-highlight {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      right: 5px;
-      height: 2px;
-      background: rgba(255, 255, 255, 0.2);
+      width: 30px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 50%;
-      filter: blur(1px);
+      top: 30%;
+      left: 30%;
+      filter: blur(2px);
     }
   </style>
 </head>
 <body>
-  <div class="robot-face">
-    <div class="visor">
-      <div class="eye"></div>
-      <div class="eye"></div>
-    </div>
-    <div class="mouth-container">
-      <div class="mouth">
-        <div class="mouth-tech-lines"></div>
-        <div class="mouth-glow"></div>
-        <div class="mouth-highlight"></div>
-        <div class="mouth-inner" id="mouthInner">
-          <!-- Segmentos serão adicionados via JavaScript -->
-        </div>
+  <div class="robot-visor">
+    <div class="eyes-container">
+      <div class="eye">
+        <div class="eye-pupil"></div>
+        <div class="eye-reflection"></div>
+      </div>
+      <div class="eye">
+        <div class="eye-pupil"></div>
+        <div class="eye-reflection"></div>
       </div>
     </div>
   </div>
-
-  <script>
-    // Criar segmentos dinâmicos para a boca
-    const mouthInner = document.getElementById('mouthInner');
-    const segmentCount = 16;
-    
-    for (let i = 0; i < segmentCount; i++) {
-      const segment = document.createElement('div');
-      segment.className = 'mouth-segment';
-      segment.style.height = `${Math.random() * 70 + 30}%`;
-      mouthInner.appendChild(segment);
-    }
-    
-    // Animar os segmentos com padrão mais orgânico
-    function animateMouth() {
-      const segments = document.querySelectorAll('.mouth-segment');
-      const baseHeight = 30 + Math.random() * 20;
-      const variation = 15 + Math.random() * 30;
-      
-      segments.forEach((segment, index) => {
-        // Criar um padrão de onda suave
-        const wave = Math.sin(Date.now() / 500 + index * 0.3) * variation;
-        const newHeight = baseHeight + wave;
-        segment.style.height = `${Math.max(10, newHeight)}%`;
-        
-        // Adicionar pequenas variações de largura
-        segment.style.width = `${8 + Math.sin(Date.now() / 800 + index) * 2}px`;
-      });
-      
-      requestAnimationFrame(animateMouth);
-    }
-    
-    // Iniciar animação
-    animateMouth();
-  </script>
 </body>
 </html>

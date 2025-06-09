@@ -9,7 +9,7 @@ import time
 
 # Configuração da comunicação serial com o Arduino
 try:
-    arduino = serial.Serial('COM18', 9600, timeout=1)  # Altere COM3 para a porta do seu Arduino
+    arduino = serial.Serial('COM18', 9600, timeout=1)
     time.sleep(2)  # Espera a conexão ser estabelecida
 except serial.SerialException as e:
     print(f"Erro ao conectar ao Arduino: {e}")
