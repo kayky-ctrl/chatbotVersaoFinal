@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Robô Gigante Neo-Futurista</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500&display=swap"
+    rel="stylesheet">
   <style>
     :root {
-      --primary-color: #ffffff; /* Branco */
-      --secondary-color: #e0a800; /* Amarelo */
-      --accent-color: #9c27b0; /* Roxo */
-      --dark-color: #0a0a23;
+      --primary-color: #ffffff;
+      --secondary-color: #ffffff;
+      --accent-color: #c678ff;
+      --dark-color: #3a2c1a;
       --metal-dark: #2a2a2a;
       --metal-light: #4a4a4a;
       --glow-intensity: 1;
@@ -27,16 +29,15 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: 
-        radial-gradient(circle at 20% 30%, #1a1a40 0%, var(--dark-color) 50%),
-        linear-gradient(to bottom, #000000 0%, var(--dark-color) 100%);
+      background:
+        radial-gradient(circle at 20% 30%, #4a3a2a 0%, var(--dark-color) 50%),
+        linear-gradient(to bottom, #2a2218 0%, var(--dark-color) 100%);
       font-family: 'Orbitron', 'Rajdhani', sans-serif;
       overflow: hidden;
       perspective: 1000px;
       cursor: none;
     }
 
-    /* Cursor personalizado futurista */
     .custom-cursor {
       position: fixed;
       width: 30px;
@@ -67,7 +68,6 @@
       height: 40px;
     }
 
-    /* Efeito de partículas futuristas */
     .particles {
       position: fixed;
       top: 0;
@@ -91,66 +91,44 @@
         transform: translateY(0) rotate(0deg);
         opacity: 0;
       }
+
       10% {
         opacity: 0.6;
       }
+
       90% {
         opacity: 0.6;
       }
+
       100% {
         transform: translateY(-100vh) rotate(360deg);
         opacity: 0;
       }
     }
 
-    /* Container principal do robô com efeito 3D */
     .robot-container {
-      position: relative;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       transform-style: preserve-3d;
-      animation: floatRobot 8s ease-in-out infinite;
     }
 
-    @keyframes floatRobot {
-      0%, 100% {
-        transform: translateY(0) rotateX(0deg) rotateY(0deg);
-      }
-      50% {
-        transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
-      }
-    }
-
-    /* Visor do robô - versão ultra moderna */
     .robot-visor {
-      width: 900px;
-      height: 540px;
-      background: 
-        linear-gradient(135deg, rgba(224, 168, 0, 0.2), rgba(156, 39, 176, 0.2)),
-        radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-      border-radius: 90px;
-      box-shadow:
-        inset 0 0 120px rgba(255, 255, 255, 0.6),
-        0 0 200px rgba(255, 255, 255, 0.8),
-        0 0 300px rgba(156, 39, 176, 0.5);
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(156, 39, 176, 0.1)),
+        radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
       position: relative;
       overflow: hidden;
-      border: 20px solid var(--metal-dark);
       display: flex;
       justify-content: center;
       align-items: center;
-      transform-style: preserve-3d;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.7));
+      filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
     }
 
-    .robot-visor:hover {
-      transform: scale(1.02);
-      box-shadow:
-        inset 0 0 150px rgba(255, 255, 255, 0.8),
-        0 0 250px rgba(255, 255, 255, 1),
-        0 0 400px rgba(156, 39, 176, 0.7);
-    }
-
-    /* Efeito de brilho dinâmico */
     .robot-visor::before {
       content: '';
       position: absolute;
@@ -158,215 +136,416 @@
       left: -50%;
       width: 200%;
       height: 200%;
-      background: linear-gradient(
-        to bottom right,
-        rgba(255, 255, 255, 0.6) 0%,
-        rgba(255, 255, 255, 0) 70%
-      );
+      background: linear-gradient(to bottom right,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0) 70%);
       transform: rotate(30deg);
       animation: shine 6s infinite linear;
-      opacity: 0.5;
+      opacity: 0.3;
     }
 
     @keyframes shine {
-      0% { transform: translateX(-100%) translateY(-50%) rotate(30deg); }
-      100% { transform: translateX(100%) translateY(50%) rotate(30deg); }
+      0% {
+        transform: translateX(-100%) translateY(-50%) rotate(30deg);
+      }
+
+      100% {
+        transform: translateX(100%) translateY(50%) rotate(30deg);
+      }
     }
 
-    /* Padrão de circuito no visor */
     .circuit-pattern {
       position: absolute;
       width: 100%;
       height: 100%;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
       background-size: 40px 40px;
-      opacity: 0.4;
+      opacity: 0.3;
     }
 
-    /* Container dos olhos com efeito de profundidade */
     .eyes-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 180px;
+      gap: 15vw;
       transform-style: preserve-3d;
       perspective: 1000px;
     }
 
-    /* Olhos futuristas com múltiplas camadas */
     .eye {
-      width: 180px;
-      height: 220px;
-      background: 
-        radial-gradient(circle at 30% 30%, var(--primary-color), var(--secondary-color));
+      width: 25vw;
+      height: 25vw;
+      max-width: 300px;
+      max-height: 300px;
+      min-width: 150px;
+      min-height: 150px;
+      background: radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, 0.9) 0%,
+          rgba(255, 255, 255, 0.7) 50%,
+          rgba(255, 255, 255, 0.4) 100%);
       border-radius: 50%;
-      box-shadow: 
-        0 0 80px var(--primary-color),
-        0 0 160px var(--primary-color),
-        inset 0 0 40px rgba(255, 255, 255, 0.9);
+      box-shadow:
+        0 0 100px rgba(255, 255, 255, 0.8),
+        inset 0 0 50px rgba(255, 255, 255, 0.6);
       position: relative;
       overflow: hidden;
       transform-style: preserve-3d;
-      transition: all 0.3s ease;
-      animation: eyeGlow 4s infinite alternate;
     }
 
-    @keyframes eyeGlow {
-      0%, 100% { box-shadow: 0 0 80px var(--primary-color), 0 0 160px var(--primary-color); }
-      50% { box-shadow: 0 0 120px var(--primary-color), 0 0 240px var(--primary-color); }
-    }
-
-    .eye::before {
-      content: '';
+.eye-pupil {
       position: absolute;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .eye::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: conic-gradient(
-        from 45deg,
-        transparent 0%,
-        rgba(255,255,255,0.1) 10%,
-        transparent 20%,
-        transparent 30%,
-        rgba(255,255,255,0.1) 40%,
-        transparent 50%,
-        transparent 60%,
-        rgba(255,255,255,0.1) 70%,
-        transparent 80%,
-        transparent 90%,
-        rgba(255,255,255,0.1) 100%
-      );
-      border-radius: 50%;
-      animation: rotateScan 8s infinite linear;
-    }
-
-    @keyframes rotateScan {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Pupila holográfica */
-    .eye-pupil {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      background: rgba(156, 39, 176, 0.95);
+      width: 45%;
+      height: 45%;
+      background: 
+        radial-gradient(circle at 30% 30%, 
+          rgba(198, 120, 255, 0.95) 0%,
+          rgba(156, 39, 176, 0.9) 50%,
+          rgba(80, 0, 120, 0.9) 100%);
       border-radius: 50%;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      filter: blur(8px);
-      animation: 
-        blink 6s infinite ease-in-out,
-        pulse 3s infinite alternate;
+      z-index: 10;
+      animation: naturalBlink 4s infinite; /* Intervalo entre piscadas reduzido (era 8s) */
       box-shadow:
-        0 0 30px rgba(255, 255, 255, 0.8),
-        inset 0 0 20px rgba(255, 255, 255, 0.6);
-      z-index: 2;
+        0 0 50px rgba(198, 120, 255, 0.8),
+        0 0 100px rgba(156, 39, 176, 0.6),
+        inset 0 0 30px rgba(255, 255, 255, 0.7);
+      filter: blur(0.5px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transform-origin: center top;
     }
 
-    @keyframes pulse {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
-      100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-    }
-
-    @keyframes blink {
-      0%, 40%, 44%, 48%, 52%, 56%, 60%, 100% { 
-        height: 80px;
-        top: 50%;
+    @keyframes naturalBlink {
+      0%, 70%, 85%, 100% {  /* Piscada mais lenta (mais frames de animação) */
+        height: 45%;
+        transform: translate(-50%, -50%) scaleY(1);
       }
-      42%, 46%, 50%, 54%, 58% { 
-        height: 25px;
-        top: calc(50% + 35px);
+      72% {
+        height: 3%;
+        transform: translate(-50%, -50%) scaleY(0.07);
+      }
+      75% {
+        height: 10%;
+        transform: translate(-50%, -50%) scaleY(0.2);
+      }
+      80% {
+        height: 45%;
+        transform: translate(-50%, -50%) scaleY(1);
       }
     }
 
-    /* Reflexo com efeito de lente */
+    /* PÁLPEBRA SUPERIOR - Versão com piscada mais lenta */
+    .eye::after {
+      content: '';
+      position: absolute;
+      top: -5%;
+      left: 0;
+      width: 100%;
+      height: 110%;
+      background: 
+        radial-gradient(ellipse at center top, 
+          rgba(30, 10, 50, 0.9) 0%, 
+          rgba(30, 10, 50, 0.7) 30%,
+          transparent 70%);
+      border-radius: 50% 50% 45% 45% / 30% 30% 70% 70%;
+      z-index: 25;
+      animation: 
+        eyelidBlink 4s infinite, /* Sincronizado com o pupil */
+        eyelidMovement 12s infinite ease-in-out;
+      transform-origin: center top;
+      box-shadow: 
+        inset 0 -10px 20px rgba(0, 0, 0, 0.5),
+        0 5px 15px rgba(0, 0, 0, 0.3);
+      border-top: 2px solid rgba(100, 50, 150, 0.5);
+    }
+
+    @keyframes eyelidBlink {
+      0%, 70%, 85%, 100% {  /* Piscada mais lenta e suave */
+        transform: scaleY(1);
+        height: 110%;
+        top: -5%;
+        opacity: 0.3;
+      }
+      72% {
+        transform: scaleY(0.05);
+        height: 50%;
+        top: 25%;
+        opacity: 0.8;
+      }
+      75% {
+        transform: scaleY(0.2);
+        height: 80%;
+        top: 10%;
+        opacity: 0.6;
+      }
+      80% {
+        transform: scaleY(1);
+        height: 110%;
+        top: -5%;
+        opacity: 0.3;
+      }
+    }
+
+    /* PÁLPEBRA INFERIOR - Versão mais rápida */
+    .eye::before {
+      content: '';
+      position: absolute;
+      bottom: -5%;
+      left: 0;
+      width: 100%;
+      height: 110%;
+      background:
+        radial-gradient(ellipse at center bottom,
+          rgba(30, 10, 50, 0.6) 0%,
+          transparent 70%);
+      border-radius: 45% 45% 50% 50% / 70% 70% 30% 30%;
+      z-index: 25;
+      animation:
+        lowerEyelidMovement 8s infinite ease-in-out;
+      /* Reduzi de 12s para 8s */
+      transform-origin: center bottom;
+      box-shadow:
+        inset 0 10px 20px rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(100, 50, 150, 0.3);
+    }
+
+    @keyframes lowerEyelidMovement {
+
+      0%,
+      100% {
+        transform: scaleY(1) rotate(0deg);
+      }
+
+      30% {
+        transform: scaleY(0.98) rotate(-0.3deg);
+      }
+
+      50% {
+        transform: scaleY(1.01) rotate(0.2deg);
+      }
+
+      70% {
+        transform: scaleY(0.99) rotate(-0.1deg);
+      }
+    }
+
+    /* PÁLPEBRA LATERAL - Para movimento mais orgânico */
+    .eye-lid {
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      border-radius: 50%;
+      z-index: 24;
+    }
+
+    .eye-lid.left {
+      left: -5%;
+      background:
+        radial-gradient(ellipse at left center,
+          rgba(30, 10, 50, 0.4) 0%,
+          transparent 70%);
+      animation: leftLidMovement 18s infinite ease-in-out;
+    }
+
+    .eye-lid.right {
+      right: -5%;
+      background:
+        radial-gradient(ellipse at right center,
+          rgba(30, 10, 50, 0.4) 0%,
+          transparent 70%);
+      animation: rightLidMovement 16s infinite ease-in-out;
+    }
+
+    @keyframes leftLidMovement {
+
+      0%,
+      100% {
+        transform: scaleX(1);
+      }
+
+      30% {
+        transform: scaleX(0.98);
+      }
+
+      60% {
+        transform: scaleX(1.02);
+      }
+    }
+
+    @keyframes rightLidMovement {
+
+      0%,
+      100% {
+        transform: scaleX(1);
+      }
+
+      40% {
+        transform: scaleX(0.97);
+      }
+
+      70% {
+        transform: scaleX(1.03);
+      }
+    }
+
+    .pupil-scanlines {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background:
+        repeating-linear-gradient(to bottom,
+          transparent 0%,
+          rgba(255, 255, 255, 0.05) 1%,
+          transparent 2%);
+      z-index: 13;
+      animation: scanMove 4s infinite linear;
+    }
+
+    @keyframes scanMove {
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: 0 100%;
+      }
+    }
+
+    .energy-particle {
+      position: absolute;
+      background: rgba(198, 120, 255, 0.8);
+      border-radius: 50%;
+      z-index: 14;
+      filter: blur(1px);
+      animation: floatParticle 8s infinite linear;
+    }
+
+    @keyframes floatParticle {
+      0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 0.8;
+      }
+
+      80% {
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: translate(calc(var(--end-x) - var(--start-x)),
+            calc(var(--end-y) - var(--start-y))) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    .eye-iris {
+      position: absolute;
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background:
+        radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, 0.6) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          transparent 100%);
+      z-index: 5;
+    }
+
     .eye-reflection {
       position: absolute;
-      width: 40px;
-      height: 40px;
-      background: rgba(255, 255, 255, 0.95);
+      width: 25%;
+      height: 25%;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 50%;
-      top: 25%;
-      left: 25%;
-      filter: blur(3px);
-      z-index: 3;
+      top: 20%;
+      left: 20%;
+      filter: blur(2px);
+      z-index: 15;
       animation: reflectionMove 10s infinite ease-in-out;
     }
 
     @keyframes reflectionMove {
-      0%, 100% { transform: translate(0, 0); }
-      25% { transform: translate(20px, 10px); }
-      50% { transform: translate(-10px, 20px); }
-      75% { transform: translate(15px, -10px); }
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+        opacity: 0.8;
+      }
+
+      25% {
+        transform: translate(10%, 5%);
+        opacity: 0.9;
+      }
+
+      50% {
+        transform: translate(-5%, 10%);
+        opacity: 0.7;
+      }
+
+      75% {
+        transform: translate(8%, -5%);
+        opacity: 0.9;
+      }
     }
 
-    /* Efeito de íris dinâmica */
-    .eye-iris {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: 
-        radial-gradient(circle at 30% 30%, 
-          rgba(255, 255, 255, 0.8) 0%, 
-          rgba(224, 168, 0, 0.9) 50%, 
-          rgba(0, 10, 30, 0.9) 100%);
-      z-index: 1;
-      animation: irisPulse 5s infinite alternate;
-    }
-
-    @keyframes irisPulse {
-      0% { transform: translate(-50%, -50%) scale(1); }
-      100% { transform: translate(-50%, -50%) scale(1.05); }
-    }
-
-    /* Anéis concêntricos no olho */
     .eye-ring {
       position: absolute;
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 50%;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 1;
+      z-index: 3;
     }
 
-    .eye-ring:nth-child(1) { width: 140px; height: 140px; }
-    .eye-ring:nth-child(2) { width: 160px; height: 160px; }
-    .eye-ring:nth-child(3) { width: 180px; height: 180px; }
+    .eye-ring:nth-child(1) {
+      width: 90%;
+      height: 90%;
+    }
 
-    /* Efeitos de partículas nos olhos */
-    .eye-particle {
+    .eye-ring:nth-child(2) {
+      width: 105%;
+      height: 105%;
+    }
+
+    .eye-ring:nth-child(3) {
+      width: 120%;
+      height: 120%;
+    }
+
+    .eye-glow {
       position: absolute;
-      background: white;
-      border-radius: 50%;
-      opacity: 0;
-      animation: eyeParticle 4s infinite linear;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(198, 120, 255, 0.2) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      animation: glowPulse 4s infinite alternate;
     }
 
-    @keyframes eyeParticle {
-      0% { transform: translate(0, 0); opacity: 0; }
-      10% { opacity: 0.8; }
-      90% { opacity: 0.8; }
-      100% { transform: translate(random(100) - 50 + 'px', random(100) - 50 + 'px'); opacity: 0; }
+    @keyframes glowPulse {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.8;
+      }
     }
 
-    /* HUD futurista ao redor do visor */
     .hud-elements {
       position: absolute;
       width: 100%;
@@ -376,9 +555,9 @@
 
     .hud-circle {
       position: absolute;
-      border: 2px solid var(--primary-color);
+      border: 1px solid var(--primary-color);
       border-radius: 50%;
-      opacity: 0.6;
+      opacity: 0.4;
     }
 
     .hud-circle:nth-child(1) {
@@ -399,16 +578,29 @@
     }
 
     @keyframes hudPulse {
-      0%, 100% { transform: scale(1); opacity: 0.4; }
-      50% { transform: scale(1.02); opacity: 0.8; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.4;
+      }
+
+      50% {
+        transform: scale(1.02);
+        opacity: 0.8;
+      }
     }
 
     @keyframes hudRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    /* Elementos de status futuristas */
     .status-display {
       position: absolute;
       color: var(--primary-color);
@@ -416,13 +608,13 @@
       font-weight: 700;
       text-shadow: 0 0 10px var(--primary-color);
       opacity: 0.8;
+      animation: textFlicker 3s infinite alternate;
     }
 
     .status-display:nth-child(1) {
       top: 20px;
       left: 40px;
       font-size: 14px;
-      animation: textFlicker 3s infinite alternate;
     }
 
     .status-display:nth-child(2) {
@@ -433,16 +625,24 @@
     }
 
     @keyframes textFlicker {
-      0%, 100% { opacity: 0.8; text-shadow: 0 0 10px var(--primary-color); }
-      50% { opacity: 1; text-shadow: 0 0 15px var(--primary-color), 0 0 20px var(--accent-color); }
+
+      0%,
+      100% {
+        opacity: 0.8;
+        text-shadow: 0 0 10px var(--primary-color);
+      }
+
+      50% {
+        opacity: 1;
+        text-shadow: 0 0 15px var(--primary-color), 0 0 20px var(--accent-color);
+      }
     }
 
-    /* Efeito de distorção holográfica */
     .holographic-distortion {
       position: absolute;
       width: 100%;
       height: 100%;
-      background: 
+      background:
         radial-gradient(circle at center, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
       opacity: 0.3;
       animation: distortionWave 12s infinite linear;
@@ -450,33 +650,45 @@
     }
 
     @keyframes distortionWave {
-      0% { transform: scale(1); opacity: 0.1; }
-      50% { transform: scale(1.02); opacity: 0.3; }
-      100% { transform: scale(1); opacity: 0.1; }
+      0% {
+        transform: scale(1);
+        opacity: 0.1;
+      }
+
+      50% {
+        transform: scale(1.02);
+        opacity: 0.3;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0.1;
+      }
     }
 
-    /* Efeito de digitalização */
     .scanlines {
       position: absolute;
       width: 100%;
       height: 100%;
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        rgba(255, 255, 255, 0.05) 50%,
-        transparent 100%
-      );
+      background: linear-gradient(to bottom,
+          transparent 0%,
+          rgba(255, 255, 255, 0.05) 50%,
+          transparent 100%);
       background-size: 100% 4px;
       pointer-events: none;
       animation: scanlineMove 2s infinite linear;
     }
 
     @keyframes scanlineMove {
-      from { background-position: 0 0; }
-      to { background-position: 0 4px; }
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: 0 4px;
+      }
     }
 
-    /* Efeito de foco automático */
     .autofocus {
       position: absolute;
       width: 100%;
@@ -487,78 +699,72 @@
     }
 
     @keyframes autofocus {
-      0%, 100% { transform: scale(1); opacity: 0; }
-      50% { transform: scale(1.1); opacity: 0.2; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.1);
+        opacity: 0.2;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="custom-cursor"></div>
-  
+
   <div class="particles" id="particles"></div>
-  
+
   <div class="robot-container">
     <div class="robot-visor">
       <div class="circuit-pattern"></div>
       <div class="holographic-distortion"></div>
       <div class="scanlines"></div>
       <div class="autofocus"></div>
-      
+
       <div class="hud-elements">
         <div class="hud-circle"></div>
         <div class="hud-circle"></div>
         <div class="status-display">SYSTEM ONLINE</div>
         <div class="status-display">NEO-VISION v3.0</div>
       </div>
-      
+
       <div class="eyes-container">
         <div class="eye">
+          <div class="eye-lid left"></div>
+          <div class="eye-lid right"></div>
+          <div class="eye-glow"></div>
           <div class="eye-ring"></div>
           <div class="eye-ring"></div>
           <div class="eye-ring"></div>
           <div class="eye-iris"></div>
-          <div class="eye-pupil"></div>
+          <div class="eye-pupil">
+            <div class="pupil-scanlines"></div>
+          </div>
           <div class="eye-reflection"></div>
-          <div class="eye-particle" style="top: 30%; left: 40%; width: 3px; height: 3px; animation-delay: 0s;"></div>
-          <div class="eye-particle" style="top: 60%; left: 30%; width: 2px; height: 2px; animation-delay: 1s;"></div>
-          <div class="eye-particle" style="top: 40%; left: 70%; width: 4px; height: 4px; animation-delay: 2s;"></div>
         </div>
-        
+
         <div class="eye">
+          <div class="eye-lid left"></div>
+          <div class="eye-lid right"></div>
+          <div class="eye-glow"></div>
           <div class="eye-ring"></div>
           <div class="eye-ring"></div>
           <div class="eye-ring"></div>
           <div class="eye-iris"></div>
-          <div class="eye-pupil"></div>
+          <div class="eye-pupil">
+            <div class="pupil-scanlines"></div>
+          </div>
           <div class="eye-reflection"></div>
-          <div class="eye-particle" style="top: 50%; left: 20%; width: 3px; height: 3px; animation-delay: 0.5s;"></div>
-          <div class="eye-particle" style="top: 20%; left: 50%; width: 2px; height: 2px; animation-delay: 1.5s;"></div>
-          <div class="eye-particle" style="top: 70%; left: 60%; width: 4px; height: 4px; animation-delay: 2.5s;"></div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Cursor personalizado que segue o mouse
-    document.addEventListener('mousemove', (e) => {
-      const cursor = document.querySelector('.custom-cursor');
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-      
-      // Efeito de interação com os olhos
-      const eyes = document.querySelectorAll('.eye-pupil');
-      eyes.forEach(eye => {
-        const eyeRect = eye.getBoundingClientRect();
-        const eyeX = eyeRect.left + eyeRect.width / 2;
-        const eyeY = eyeRect.top + eyeRect.height / 2;
-        const angle = Math.atan2(e.clientY - eyeY, e.clientX - eyeX);
-        const distance = Math.min(20, Math.hypot(e.clientX - eyeX, e.clientY - eyeY) / 5);
-        
-        eye.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-      });
-    });
-
     // Criar partículas flutuantes
     const particlesContainer = document.getElementById('particles');
     for (let i = 0; i < 50; i++) {
@@ -573,38 +779,44 @@
       particlesContainer.appendChild(particle);
     }
 
-    // // Efeito de interação ao passar o mouse no visor
-    // const visor = document.querySelector('.robot-visor');
-    // visor.addEventListener('mousemove', (e) => {
-    //   const rect = visor.getBoundingClientRect();
-    //   const x = e.clientX - rect.left;
-    //   const y = e.clientY - rect.top;
-      
-    //   visor.style.setProperty('--mouse-x', x + 'px');
-    //   visor.style.setProperty('--mouse-y', y + 'px');
-      
-    //   // Efeito de inclinação 3D
-    //   const centerX = rect.width / 2;
-    //   const centerY = rect.height / 2;
-    //   const angleX = (y - centerY) / 20;
-    //   const angleY = (centerX - x) / 20;
-      
-    //   visor.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg)`;
-    // });
+    // Criar partículas de energia nos olhos
+    document.querySelectorAll('.eye-pupil').forEach(pupil => {
+      for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('energy-particle');
 
-    visor.addEventListener('mouseleave', () => {
-      visor.style.transform = 'rotateX(0) rotateY(0)';
+        const startX = Math.random() * 80 - 40;
+        const startY = Math.random() * 80 - 40;
+        const endX = Math.random() * 160 - 80;
+        const endY = Math.random() * 160 - 80;
+
+        particle.style.setProperty('--start-x', startX + '%');
+        particle.style.setProperty('--start-y', startY + '%');
+        particle.style.setProperty('--end-x', endX + '%');
+        particle.style.setProperty('--end-y', endY + '%');
+
+        particle.style.left = '50%';
+        particle.style.top = '50%';
+        particle.style.width = Math.random() * 5 + 2 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particle.style.animationDuration = Math.random() * 5 + 5 + 's';
+
+        pupil.appendChild(particle);
+      }
     });
 
     // Efeito de glitch aleatório
+    const visor = document.querySelector('.robot-visor');
     setInterval(() => {
       if (Math.random() > 0.9) {
-        visor.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.7)) hue-rotate(' + (Math.random() * 60 - 30) + 'deg)';
+        visor.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3)) hue-rotate(' + (Math.random() * 60 - 30) + 'deg)';
         setTimeout(() => {
-          visor.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.7))';
+          visor.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))';
         }, 100);
       }
     }, 3000);
   </script>
 </body>
+
 </html>

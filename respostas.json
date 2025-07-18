@@ -6,8 +6,8 @@
   },
   {
     "palavras_chave": ["claro", "seguir", "consciencia","garota"],
-    "acoes": ["abrir_porta"],
-    "resposta": "Mas… onde está essa tal consciência?"
+    "resposta": "Mas… onde está essa tal consciência?",
+    "acoes": ["abrir_porta"]
   },
   {
     "palavras_chave": ["robo", "laboratorio", "criações","quebrando"],
