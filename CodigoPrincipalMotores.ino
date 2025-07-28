@@ -59,10 +59,10 @@ void loop() {
     Serial.println(comando);
     
     if (comando == "mover_frente") {
-      moverFrente(1000);
+      moverFrente(2000);
     } 
     else if (comando == "mover_tras") {
-      moverTras(1000);
+      moverTras(2000);
     } 
     else if (comando == "girar_direita") {
       girarDireita(1000);
@@ -90,8 +90,8 @@ void moverFrente(unsigned long tempo) {
   digitalWrite(ena2, HIGH);
   
   // Configurar direção para frente
-  digitalWrite(dir, HIGH);
-  digitalWrite(dir2, LOW);
+  digitalWrite(dir, LOW);
+  digitalWrite(dir2, HIGH);
   
   // Gerar pulsos por 'tempo' milissegundos
   unsigned long inicio = millis();
@@ -117,8 +117,8 @@ void moverTras(unsigned long tempo) {
   digitalWrite(ena2, HIGH);
   
   // Configurar direção para trás
-  digitalWrite(dir, LOW);
-  digitalWrite(dir2, HIGH);
+  digitalWrite(dir, HIGH);
+  digitalWrite(dir2, LOW);
   
   // Gerar pulsos por 'tempo' milissegundos
   unsigned long inicio = millis();
