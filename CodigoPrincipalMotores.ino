@@ -91,17 +91,17 @@ void moverFrente(unsigned long tempo) {
   
   // Configurar direção para frente
   digitalWrite(dir, HIGH);
-  digitalWrite(dir2, HIGH);
+  digitalWrite(dir2, LOW);
   
   // Gerar pulsos por 'tempo' milissegundos
   unsigned long inicio = millis();
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000); // Aumentado para 1ms
+    delayMicroseconds(100); // Aumentado para 1ms
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(1000);
+    delayMicroseconds(500);
   }
   
   // Desabilitar os motores
@@ -117,7 +117,7 @@ void moverTras(unsigned long tempo) {
   digitalWrite(ena2, HIGH);
   
   // Configurar direção para trás
-  digitalWrite(dir, LOW);
+  digitalWrite(dir, HIGH);
   digitalWrite(dir2, LOW);
   
   // Gerar pulsos por 'tempo' milissegundos
