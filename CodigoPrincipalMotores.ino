@@ -1,195 +1,82 @@
-#include <Servo.h>
+// Definindo os pinos para o sensor ultrassônico
+const int trigPin = 2;
+const int echoPin = 3;
 
-// Definindo os pinos dos motores
-const int ena = 2;
-const int dir = 3;
-const int pul = 4;
+// Definindo os pinos para a ponte H
+const int enA = 9;   // Pino PWM para controle de velocidade
+const int in1 = 5;
+const int in2 = 6;
 
-const int ena2 = 5;
-const int dir2 = 6;
-const int pul2 = 7;
-
-// Definindo o pino do servo
-const int servoPin = 22;
-
-// Criando objeto do servo
-Servo myServo;
+// Distância de parada em cm
+const int distanciaParada = 20;
 
 void setup() {
-  // Configurando os pinos dos motores como saída
-  pinMode(ena, OUTPUT);
-  pinMode(dir, OUTPUT);
-  pinMode(pul, OUTPUT);
+  // Inicializando os pinos do sensor
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   
-  pinMode(ena2, OUTPUT);
-  pinMode(dir2, OUTPUT);
-  pinMode(pul2, OUTPUT);
+  // Inicializando os pinos da ponte H
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
   
-  // Configurando o servo
-  myServo.attach(servoPin);
-  myServo.write(0); // Inicia com a porta fechada
-  
-  // Iniciando com os motores desabilitados (verificar se LOW ou HIGH habilita no seu driver)
-  digitalWrite(ena, LOW);  
-  digitalWrite(ena2, LOW);
-  
-  // Iniciando comunicação serial
+  // Iniciando comunicação serial para debug
   Serial.begin(9600);
-  Serial.println("Sistema iniciado - Motores parados");
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    String comando = Serial.readStringUntil('\n');
-    comando.trim();
-    
-    Serial.print("Comando recebido: ");
-    Serial.println(comando);
-    
-    if (comando == "mover_frente") {
-      moverFrente(1000);
-    } 
-    else if (comando == "mover_tras") {
-      moverTras(1000);
-    } 
-    else if (comando == "girar_direita") {
-      girarDireita(1000);
-    }
-    else if (comando == "girar_esquerda") {
-      girarEsquerda(1000);
-    }
-    else if (comando == "abrir_porta") {
-      abrirPorta();
-    } 
-    else if (comando == "fechar_porta") {
-      fecharPorta();
-    }
-    else if (comando == "andar_3s") {
-      moverFrente(3000);
-    }
+  // Medindo a distância
+  float distancia = medirDistancia();
+  
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+  
+  // Se a distância for maior que 50 cm, gira o motor
+  if (distancia > distanciaParada) {
+    girarMotor();
+  } else {
+    // Caso contrário, para o motor
+    pararMotor();
+    Serial.println("Objeto detectado a menos de 50 cm - Motor parado");
   }
+  
+  delay(100); // Pequeno delay entre as medições
 }
 
-void moverFrente(unsigned long tempo) {
-  Serial.println("Movendo para frente");
+float medirDistancia() {
+  // Limpa o trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Define o trigPin no estado HIGH por 10 microsegundos
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
   
-  // Configurar direção para frente
-  digitalWrite(dir, HIGH);
-  digitalWrite(dir2, HIGH);
+  // Lê o echoPin, retorna o tempo de viagem da onda sonora em microssegundos
+  long duration = pulseIn(echoPin, HIGH);
   
-  // Gerar pulsos por 'tempo' milissegundos
-  unsigned long inicio = millis();
-  while(millis() - inicio < tempo) {
-    digitalWrite(pul, HIGH);
-    digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000); // Aumentado para 1ms
-    digitalWrite(pul, LOW);
-    digitalWrite(pul2, LOW);
-    delayMicroseconds(1000);
-  }
+  // Calcula a distância (velocidade do som dividida por 2 - ida e volta)
+  float distancia = duration * 0.034 / 2;
   
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  return distancia;
 }
 
-void moverTras(unsigned long tempo) {
-  Serial.println("Movendo para trás");
+void girarMotor() {
+  // Define a direção de rotação (por exemplo, para frente)
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Define a velocidade máxima (255) ou ajuste conforme necessário
+  analogWrite(enA, 255);
   
-  // Configurar direção para trás
-  digitalWrite(dir, LOW);
-  digitalWrite(dir2, LOW);
-  
-  // Gerar pulsos por 'tempo' milissegundos
-  unsigned long inicio = millis();
-  while(millis() - inicio < tempo) {
-    digitalWrite(pul, HIGH);
-    digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(pul, LOW);
-    digitalWrite(pul2, LOW);
-    delayMicroseconds(1000);
-  }
-  
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  Serial.println("Motor girando...");
 }
 
-void girarDireita(unsigned long tempo) {
-  Serial.println("Girando para direita");
-  
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
-  
-  // Configurar direções opostas para girar
-  digitalWrite(dir, HIGH);   // Motor 1 para frente
-  digitalWrite(dir2, LOW);   // Motor 2 para trás
-  
-  // Gerar pulsos por 'tempo' milissegundos
-  unsigned long inicio = millis();
-  while(millis() - inicio < tempo) {
-    digitalWrite(pul, HIGH);
-    digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(pul, LOW);
-    digitalWrite(pul2, LOW);
-    delayMicroseconds(1000);
-  }
-  
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
-}
-
-void girarEsquerda(unsigned long tempo) {
-  Serial.println("Girando para esquerda");
-  
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
-  
-  // Configurar direções opostas para girar
-  digitalWrite(dir, LOW);   // Motor 1 para trás
-  digitalWrite(dir2, HIGH);   // Motor 2 para frente
-  
-  // Gerar pulsos por 'tempo' milissegundos
-  unsigned long inicio = millis();
-  while(millis() - inicio < tempo) {
-    digitalWrite(pul, HIGH);
-    digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(pul, LOW);
-    digitalWrite(pul2, LOW);
-    delayMicroseconds(1000);
-  }
-  
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
-}
-
-void abrirPorta() {
-  Serial.println("Abrindo porta");
-  for(int pos = 0; pos <= 90; pos += 1) { // Movimento suave
-    myServo.write(pos);
-    delay(15);
-  }
-}
-
-void fecharPorta() {
-  Serial.println("Fechando porta");
-  for(int pos = 90; pos >= 0; pos -= 1) { // Movimento suave
-    myServo.write(pos);
-    delay(15);
-  }
+void pararMotor() {
+  // Desliga o motor
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 0);
 }
