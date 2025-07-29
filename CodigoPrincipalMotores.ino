@@ -27,6 +27,7 @@ void setup() {
 
   pinMode(servoPin, INPUT);
   digitalWrite(servoPin, LOW);
+  
   // Configurando o servo
   delay(100);
   myServo.attach(servoPin);
@@ -34,18 +35,16 @@ void setup() {
   myServo.write(-60); // Inicia com a porta fechada
   delay(500);
   
-  // Iniciando com os motores desabilitados (verificar se LOW ou HIGH habilita no seu driver)
+  // Iniciando com os motores DESLIGADOS (LOW)
   digitalWrite(ena, LOW);  
   digitalWrite(ena2, LOW);
   
   // Iniciando comunicação serial
   Serial.begin(9600);
-  Serial.println("Sistema iniciado - Motores parados");
+  Serial.println("Sistema iniciado - Motores desligados");
 }
 
 void loop() {
-
-
   if (Serial.available() > 0) {
     String comando = Serial.readStringUntil('\n');
     comando.trim();
@@ -77,12 +76,22 @@ void loop() {
   }
 }
 
+void enableMotors() {
+  digitalWrite(ena, HIGH);
+  digitalWrite(ena2, HIGH);
+  delay(10); // Pequeno delay para garantir ativação
+}
+
+void disableMotors() {
+  digitalWrite(ena, LOW);
+  digitalWrite(ena2, LOW);
+}
+
 void moverFrente(unsigned long tempo) {
   Serial.println("Movendo para frente");
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Habilitar os motores apenas durante o movimento
+  enableMotors();
   
   // Configurar direção para frente
   digitalWrite(dir, LOW);
@@ -93,23 +102,21 @@ void moverFrente(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(900); // Aumentado para 1ms
+    delayMicroseconds(100);
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(900);
+    delayMicroseconds(100);
   }
   
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  // Desabilitar os motores após o movimento
+  disableMotors();
 }
 
 void moverTras(unsigned long tempo) {
   Serial.println("Movendo para trás");
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Habilitar os motores apenas durante o movimento
+  enableMotors();
   
   // Configurar direção para trás
   digitalWrite(dir, HIGH);
@@ -120,23 +127,21 @@ void moverTras(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(900);
+    delayMicroseconds(100);
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(900);
+    delayMicroseconds(100);
   }
   
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  // Desabilitar os motores após o movimento
+  disableMotors();
 }
 
 void girarDireita(unsigned long tempo) {
   Serial.println("Girando para direita");
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Habilitar os motores apenas durante o movimento
+  enableMotors();
   
   // Configurar direções opostas para girar
   digitalWrite(dir, HIGH);   // Motor 1 para frente
@@ -153,17 +158,15 @@ void girarDireita(unsigned long tempo) {
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  // Desabilitar os motores após o movimento
+  disableMotors();
 }
 
 void girarEsquerda(unsigned long tempo) {
   Serial.println("Girando para esquerda");
   
-  // Habilitar os motores
-  digitalWrite(ena, HIGH);
-  digitalWrite(ena2, HIGH);
+  // Habilitar os motores apenas durante o movimento
+  enableMotors();
   
   // Configurar direções opostas para girar
   digitalWrite(dir, LOW);   // Motor 1 para trás
@@ -180,14 +183,13 @@ void girarEsquerda(unsigned long tempo) {
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
-  digitalWrite(ena, LOW);
-  digitalWrite(ena2, LOW);
+  // Desabilitar os motores após o movimento
+  disableMotors();
 }
 
 void abrirPorta() {
   Serial.println("Abrindo porta");
-  for(int pos = 0; pos <= 90; pos += 1) { // Movimento suave
+  for(int pos = 0; pos <= 90; pos += 1) {
     myServo.write(pos);
     delay(15);
   }
@@ -195,11 +197,8 @@ void abrirPorta() {
 
 void fecharPorta() {
   Serial.println("Fechando porta");
-  for(int pos = 90; pos >= 0; pos -= 1) { // Movimento suave
+  for(int pos = 90; pos >= 0; pos -= 1) {
     myServo.write(pos);
     delay(15);
   }
 }
-
-
-
