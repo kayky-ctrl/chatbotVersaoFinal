@@ -6,10 +6,16 @@ import serial
 import time
 from serial.tools import list_ports
 import sys
+import argparse
 
 # ==============================================
 # CONFIGURAÇÕES PRINCIPAIS
 # ==============================================
+
+# Configuração de argumentos de linha de comando
+parser = argparse.ArgumentParser()
+parser.add_argument('--porta', type=str, help='COM9')
+args = parser.parse_args()
 
 # 1. Carrega o modelo de voz offline
 try:
@@ -27,10 +33,20 @@ engine.setProperty('rate', 150)  # Velocidade da fala
 # FUNÇÕES AUXILIARES
 # ==============================================
 
-def conectar_arduino():
+def conectar_arduino(porta_manual=None):
     """Tenta conectar ao Arduino de forma não-bloqueante"""
     try:
-        # Lista portas COM onde o Arduino pode estar
+        if porta_manual:
+            # Tenta conectar na porta manual especificada
+            try:
+                arduino = serial.Serial(porta_manual, 9600, timeout=1)
+                time.sleep(2)  # Tempo para inicialização
+                print(f"✅ Arduino conectado na porta manual {porta_manual}")
+                return arduino
+            except Exception as e:
+                print(f"⚠️ Falha ao conectar na porta manual {porta_manual}. Tentando autodetecção...")
+        
+        # Lista portas COM onde o Arduino pode estar (autodetecção)
         portas_possiveis = [
             p.device for p in list_ports.comports() 
             if 'Arduino' in p.description or 'USB Serial Device' in p.description
@@ -39,27 +55,41 @@ def conectar_arduino():
         if portas_possiveis:
             arduino = serial.Serial(portas_possiveis[0], 9600, timeout=1)
             time.sleep(2)  # Tempo para inicialização
-            print(f"✅ Arduino conectado na porta {portas_possiveis[0]}")
+            print(f"✅ Arduino conectado na porta autodetecção {portas_possiveis[0]}")
             return arduino
-        else:
-            print("⚠️ Arduino não encontrado. Continuando sem controle de movimentos...")
-            return None
+        
+        print("⚠️ Arduino não encontrado. Continuando sem controle de movimentos...")
+        return None
             
     except Exception as e:
         print(f"⚠️ Falha ao conectar ao Arduino. Continuando sem controle de movimentos...\nErro: {e}")
         return None
 
-def enviar_comando_se_possivel(arduino, comando):
+def enviar_comando_se_possivel(arduino, comando, ultima_tentativa_conexao=0):
     """Envia comandos apenas se o Arduino estiver conectado"""
+    agora = time.time()
+    
+    # Tenta reconectar a cada 30 segundos se não estiver conectado
+    if (not arduino or not arduino.is_open) and (agora - ultima_tentativa_conexao > 30):
+        print("⏳ Tentando reconectar ao Arduino...")
+        novo_arduino = conectar_arduino(args.porta)
+        ultima_tentativa_conexao = agora
+        if novo_arduino:
+            arduino = novo_arduino
+    
     if arduino and arduino.is_open:
         try:
             arduino.write(f"{comando}\n".encode())
             print(f"➡️ Enviado para Arduino: {comando}")
         except Exception as e:
-            print(f"⚠️ Falha ao enviar comando para Arduino. Reconectando...\nErro: {e}")
-            arduino.close()
-            return conectar_arduino()  # Tenta reconectar
-    return arduino
+            print(f"⚠️ Falha ao enviar comando para Arduino. Erro: {e}")
+            try:
+                arduino.close()
+            except:
+                pass
+            arduino = None
+    
+    return arduino, ultima_tentativa_conexao
 
 def carregar_dialogos():
     """Carrega o arquivo de diálogos"""
@@ -84,7 +114,8 @@ def encontrar_resposta(fala, dialogos):
 
 def main():
     # 1. Conecta ao Arduino (se disponível)
-    arduino = conectar_arduino()
+    arduino = conectar_arduino(args.porta)
+    ultima_tentativa_conexao = 0
     
     # 2. Carrega diálogos
     dialogos = carregar_dialogos()
@@ -131,7 +162,11 @@ def main():
                                 acoes = [acoes]
                                 
                             for acao in acoes:
-                                arduino = enviar_comando_se_possivel(arduino, acao)
+                                arduino, ultima_tentativa_conexao = enviar_comando_se_possivel(
+                                    arduino, 
+                                    acao,
+                                    ultima_tentativa_conexao
+                                )
                                 time.sleep(0.1)  # Pequena pausa entre comandos
                             
                             # 8. Verifica comando de desligamento
