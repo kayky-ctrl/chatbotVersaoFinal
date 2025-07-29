@@ -45,11 +45,6 @@ void setup() {
 
 void loop() {
 
-  Serial.println("Ajustando porta");
-  for(int pos = 0; pos <= -20; pos += 1) { // Movimento suave
-    myServo.write(pos);
-    delay(15);
-  }
 
   if (Serial.available() > 0) {
     String comando = Serial.readStringUntil('\n');
