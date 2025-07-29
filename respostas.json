@@ -7,7 +7,7 @@
   {
     "palavras_chave": ["claro", "seguir", "consciencia","garota"],
     "resposta": "Mas… onde está essa tal consciência?",
-    "acoes": ["abrir_porta"]
+    "acoes": ["abrir_porta", "delay 5000", "fechar_porta"]
   },
   {
     "palavras_chave": ["robo", "laboratorio", "criações","quebrando"],
@@ -46,5 +46,10 @@
   {
     "palavras_chave": ["bom", "tarde", "boa noite"],
     "resposta": "Boa noite, Giulietta!"
+  },
+  {
+    "palavras_chave": ["ajustar", "ajustar porta", "porta"],
+    "resposta": "Ajustando porta",
+    "acoes": ["ajustar_porta"]
   }
 ]
