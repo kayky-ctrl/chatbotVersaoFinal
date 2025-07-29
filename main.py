@@ -7,9 +7,14 @@ import sys
 import serial
 import time
 
+p = pyaudio.PyAudio()
+for i in range(p.get_device_count()):
+    info = p.get_device_info_by_index(i)
+    print(f"Dispositivo {i}: {info['name']} - {info['maxInputChannels']} canais de entrada")
+
 # Configuração da comunicação serial com o Arduino
 try:
-    arduino = serial.Serial('COM18', 9600, timeout=1)
+    arduino = serial.Serial('COM13', 9600, timeout=1)
     time.sleep(2)  # Espera a conexão ser estabelecida
 except serial.SerialException as e:
     print(f"Erro ao conectar ao Arduino: {e}")
@@ -50,15 +55,17 @@ def enviar_comando_arduino(comando):
         try:
             arduino.write(f"{comando}\n".encode())
             print(f"Comando enviado: {comando}")
+            time.sleep(0.1)  # Aguarda o Arduino processar o comando
         except Exception as e:
             print(f"Erro ao enviar comando: {e}")
 
 def processar_acoes(acoes):
     if not acoes:
         return
-    for acao in acoes:
+    for i, acao in enumerate(acoes):
         enviar_comando_arduino(acao)
-        time.sleep(1)  # Intervalo entre ações
+        if i < len(acoes) - 1:  # Não espera após a última ação
+            time.sleep(5)  # Delay de 5 segundos entre ações
 
 # Configuração do microfone
 p = None
@@ -95,11 +102,12 @@ try:
                         acoes = dialogo.get("acoes", [])
                         if isinstance(acoes, str):  # Para compatibilidade com versões antigas
                             acoes = [acoes]
-                        processar_acoes(acoes)
                         
                         engine.say(resposta)
                         engine.runAndWait()
                         
+                        processar_acoes(acoes)
+
                         if "desligar" in fala.lower():
                             engine.say("Desativando sistema")
                             engine.runAndWait()
