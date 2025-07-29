@@ -93,10 +93,10 @@ void moverFrente(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(100); // Aumentado para 1ms
+    delayMicroseconds(900); // Aumentado para 1ms
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(100);
+    delayMicroseconds(900);
   }
   
   // Desabilitar os motores
@@ -120,10 +120,10 @@ void moverTras(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(100);
+    delayMicroseconds(900);
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(100);
+    delayMicroseconds(900);
   }
   
   // Desabilitar os motores
@@ -200,7 +200,6 @@ void fecharPorta() {
     delay(15);
   }
 }
-
 
 
 
