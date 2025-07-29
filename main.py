@@ -12,96 +12,127 @@ import argparse
 # CONFIGURAÇÕES PRINCIPAIS
 # ==============================================
 
-# Configuração de argumentos de linha de comando
 parser = argparse.ArgumentParser()
-parser.add_argument('--porta', type=str, help='COM9')
+parser.add_argument('--porta', type=str, help='Porta serial manual para o Arduino (ex: COM3 ou /dev/ttyUSB0)')
 args = parser.parse_args()
 
-# 1. Carrega o modelo de voz offline
+# Configurações do Arduino
+BAUD_RATE = 9600
+TIMEOUT = 1
+RECONNECT_INTERVAL = 30  # segundos entre tentativas de reconexão
+
 try:
     model = Model("vosk-model-small-pt")
     recognizer = KaldiRecognizer(model, 16000)
 except Exception as e:
-    print(f"ERRO: Não foi possível carregar o modelo de voz. Verifique se a pasta 'vosk-model-small-pt' existe.\nErro: {e}")
+    print(f"ERRO: Não foi possível carregar o modelo de voz.\nErro: {e}")
     sys.exit(1)
 
-# 2. Inicializa o sintetizador de voz offline
 engine = pyttsx3.init()
-engine.setProperty('rate', 150)  # Velocidade da fala
+engine.setProperty('rate', 150)
 
 # ==============================================
-# FUNÇÕES AUXILIARES
+# FUNÇÕES AUXILIARES - ARDUINO
 # ==============================================
+
+def listar_portas_disponiveis():
+    """Lista todas as portas seriais disponíveis com detalhes"""
+    portas = list_ports.comports()
+    print("\nPortas seriais disponíveis:")
+    for porta in portas:
+        print(f" - {porta.device}: {porta.description} | {porta.hwid}")
+    return portas
 
 def conectar_arduino(porta_manual=None):
-    """Tenta conectar ao Arduino de forma não-bloqueante"""
+    """Tenta conectar ao Arduino com tratamento robusto de erros"""
     try:
         if porta_manual:
-            # Tenta conectar na porta manual especificada
+            print(f"\nTentando conectar na porta manual: {porta_manual}")
             try:
-                arduino = serial.Serial(porta_manual, 9600, timeout=1)
-                time.sleep(2)  # Tempo para inicialização
-                print(f"✅ Arduino conectado na porta manual {porta_manual}")
+                arduino = serial.Serial(porta_manual, BAUD_RATE, timeout=TIMEOUT)
+                time.sleep(2)  # Tempo crítico para inicialização
+                print(f"✅ Conexão estabelecida na porta {porta_manual}")
                 return arduino
             except Exception as e:
-                print(f"⚠️ Falha ao conectar na porta manual {porta_manual}. Tentando autodetecção...")
-        
-        # Lista portas COM onde o Arduino pode estar (autodetecção)
+                print(f"⚠️ Falha na conexão manual: {e}")
+                listar_portas_disponiveis()
+
+        # Autodetecção
+        print("\nTentando autodetectar Arduino...")
         portas_possiveis = [
-            p.device for p in list_ports.comports() 
-            if 'Arduino' in p.description or 'USB Serial Device' in p.description
+            p.device for p in list_ports.comports()
+            if ('Arduino' in p.description or 
+                'USB Serial Device' in p.description or
+                'USB' in p.description or
+                'ACM' in p.device)
         ]
-        
-        if portas_possiveis:
-            arduino = serial.Serial(portas_possiveis[0], 9600, timeout=1)
-            time.sleep(2)  # Tempo para inicialização
-            print(f"✅ Arduino conectado na porta autodetecção {portas_possiveis[0]}")
-            return arduino
-        
-        print("⚠️ Arduino não encontrado. Continuando sem controle de movimentos...")
-        return None
-            
-    except Exception as e:
-        print(f"⚠️ Falha ao conectar ao Arduino. Continuando sem controle de movimentos...\nErro: {e}")
+
+        if not portas_possiveis:
+            print("⚠️ Nenhuma porta compatível encontrada.")
+            listar_portas_disponiveis()
+            return None
+
+        for porta in portas_possiveis:
+            try:
+                print(f"Tentando conectar em {porta}...")
+                arduino = serial.Serial(porta, BAUD_RATE, timeout=TIMEOUT)
+                time.sleep(2)
+                print(f"✅ Arduino conectado em {porta}")
+                return arduino
+            except Exception as e:
+                print(f"⚠️ Falha ao conectar em {porta}: {str(e)[:100]}")
+
+        print("⚠️ Não foi possível conectar em nenhuma porta.")
         return None
 
-def enviar_comando_se_possivel(arduino, comando, ultima_tentativa_conexao=0):
-    """Envia comandos apenas se o Arduino estiver conectado"""
-    agora = time.time()
-    
-    # Tenta reconectar a cada 30 segundos se não estiver conectado
-    if (not arduino or not arduino.is_open) and (agora - ultima_tentativa_conexao > 30):
-        print("⏳ Tentando reconectar ao Arduino...")
-        novo_arduino = conectar_arduino(args.porta)
-        ultima_tentativa_conexao = agora
-        if novo_arduino:
-            arduino = novo_arduino
-    
-    if arduino and arduino.is_open:
+    except Exception as e:
+        print(f"⚠️ Erro inesperado na conexão: {e}")
+        return None
+
+def verificar_conexao_arduino(arduino):
+    """Verifica se a conexão com o Arduino está ativa"""
+    if arduino is None:
+        return False
+    try:
+        return arduino.is_open
+    except:
+        return False
+
+def enviar_comando_arduino(arduino, comando, tentar_reconectar=True):
+    """Envia comando para Arduino com tratamento de erros"""
+    if not verificar_conexao_arduino(arduino):
+        if tentar_reconectar:
+            print("⏳ Conexão perdida, tentando reconectar...")
+            return None, conectar_arduino(args.porta)
+        return None, arduino
+
+    try:
+        arduino.write(f"{comando}\n".encode())
+        print(f"➡️ Comando enviado: {comando}")
+        return True, arduino
+    except Exception as e:
+        print(f"⚠️ Erro ao enviar comando: {e}")
         try:
-            arduino.write(f"{comando}\n".encode())
-            print(f"➡️ Enviado para Arduino: {comando}")
-        except Exception as e:
-            print(f"⚠️ Falha ao enviar comando para Arduino. Erro: {e}")
-            try:
-                arduino.close()
-            except:
-                pass
-            arduino = None
-    
-    return arduino, ultima_tentativa_conexao
+            arduino.close()
+        except:
+            pass
+        if tentar_reconectar:
+            return None, conectar_arduino(args.porta)
+        return None, None
+
+# ==============================================
+# FUNÇÕES PRINCIPAIS
+# ==============================================
 
 def carregar_dialogos():
-    """Carrega o arquivo de diálogos"""
     try:
         with open("respostas.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"ERRO CRÍTICO: Não foi possível carregar os diálogos.\nErro: {e}")
+        print(f"ERRO CRÍTICO: {e}")
         sys.exit(1)
 
 def encontrar_resposta(fala, dialogos):
-    """Encontra a resposta apropriada baseada nas palavras-chave"""
     fala = fala.lower()
     for dialogo in dialogos:
         if any(palavra.lower() in fala for palavra in dialogo.get("palavras_chave", [])):
@@ -113,14 +144,10 @@ def encontrar_resposta(fala, dialogos):
 # ==============================================
 
 def main():
-    # 1. Conecta ao Arduino (se disponível)
     arduino = conectar_arduino(args.porta)
-    ultima_tentativa_conexao = 0
-    
-    # 2. Carrega diálogos
+    ultima_tentativa_conexao = time.time()
     dialogos = carregar_dialogos()
-    
-    # 3. Configura o microfone
+
     p = pyaudio.PyAudio()
     stream = p.open(
         format=pyaudio.paInt16,
@@ -129,14 +156,12 @@ def main():
         input=True,
         frames_per_buffer=8192
     )
-    
-    print("\n🎭 SISTEMA PRONTO PARA O TEATRO 🎭")
-    print("Diga 'desligar' para encerrar.\n")
-    
+
+    print("\n🎭 SISTEMA PRONTO - Diga 'desligar' para sair 🎭")
+
     try:
         while True:
             try:
-                # 4. Captura áudio
                 data = stream.read(4096, exception_on_overflow=False)
                 
                 if recognizer.AcceptWaveform(data):
@@ -146,51 +171,49 @@ def main():
                         fala = result['text']
                         print(f"👂 Você disse: {fala}")
                         
-                        # 5. Encontra a resposta
                         dialogo = encontrar_resposta(fala, dialogos)
                         if dialogo:
-                            resposta = dialogo.get("resposta", "Não entendi o que você disse...")
+                            resposta = dialogo.get("resposta", "Não entendi...")
                             print(f"🤖 Resposta: {resposta}")
                             
-                            # 6. Fala a resposta (SEMPRE executa, mesmo sem Arduino)
                             engine.say(resposta)
                             engine.runAndWait()
                             
-                            # 7. Envia ações para Arduino (se estiver conectado)
+                            # Tentar reconectar periodicamente
+                            agora = time.time()
+                            if (not verificar_conexao_arduino(arduino) and 
+                                (agora - ultima_tentativa_conexao > RECONNECT_INTERVAL)):
+                                print("⏳ Tentando reconexão periódica...")
+                                arduino = conectar_arduino(args.porta)
+                                ultima_tentativa_conexao = agora
+                            
+                            # Enviar comandos para Arduino
                             acoes = dialogo.get("acoes", [])
                             if isinstance(acoes, str):
                                 acoes = [acoes]
                                 
                             for acao in acoes:
-                                arduino, ultima_tentativa_conexao = enviar_comando_se_possivel(
-                                    arduino, 
-                                    acao,
-                                    ultima_tentativa_conexao
-                                )
-                                time.sleep(0.1)  # Pequena pausa entre comandos
+                                sucesso, arduino = enviar_comando_arduino(arduino, acao)
+                                if sucesso:
+                                    time.sleep(0.1)
                             
-                            # 8. Verifica comando de desligamento
                             if "desligar" in fala.lower():
-                                engine.say("Desativando sistema")
-                                engine.runAndWait()
                                 break
                                 
             except KeyboardInterrupt:
-                print("\n👋 Encerrando pelo usuário...")
                 break
             except Exception as e:
                 print(f"⚠️ Erro temporário: {e}")
-                time.sleep(1)  # Prevenção contra loops rápidos de erro
+                time.sleep(1)
                 
     finally:
-        # 9. Encerra recursos
-        print("\n🧹 Limpando recursos...")
+        print("\n🧹 Encerrando...")
         stream.stop_stream()
         stream.close()
         p.terminate()
-        if arduino and arduino.is_open:
+        if verificar_conexao_arduino(arduino):
             arduino.close()
-        print("✅ Sistema encerrado com segurança.")
+        print("✅ Sistema encerrado.")
 
 if __name__ == "__main__":
     main()
