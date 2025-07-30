@@ -21,7 +21,7 @@ args = parser.parse_args()  # Processa argumentos
 
 # Configurações da comunicação serial
 BAUD_RATE = 9600  # Velocidade de comunicação
-TIMEOUT = 0.1  # Timeout curto para não bloquear
+TIMEOUT = 0.5 # Timeout curto para não bloquear
 RECONNECT_INTERVAL = 30  # Intervalo entre tentativas de reconexão (segundos)
 
 # ==============================================
@@ -88,6 +88,7 @@ class ArduinoController:
     def process_queue(self):
         """Processa fila de comandos"""
         with self.lock:
+            print(f"[DEBUG] Fila atual: {len(self.command_queue)} comandos")  # Debug
             if not self.command_queue or not self.is_connected():
                 return
             
@@ -112,9 +113,16 @@ class ArduinoController:
                 print("Tentando reconectar...")
                 self.connect(args.porta)
 
+
 # ==============================================
 # 5. FUNÇÕES PRINCIPAIS
 # ==============================================
+
+def falar_async(texto):
+        def falar():
+            engine.say(texto)
+            engine.runAndWait()
+        threading.Thread(target=falar).start()
 
 def carregar_dialogos():
     """Carrega diálogos do arquivo JSON"""
@@ -176,8 +184,7 @@ def main():
                             print(f"🤖 Resposta: {resposta}")
                             
                             # PRIORIDADE PARA A VOZ
-                            engine.say(resposta)  # Fala resposta
-                            engine.runAndWait()  # Espera terminar
+                            falar_async(resposta)  # Fala resposta
                             
                             # Envia ações para Arduino
                             acoes = dialogo.get("acoes", [])
