@@ -7,7 +7,7 @@
   {
     "palavras_chave": ["claro", "seguir", "consciencia","garota"],
     "resposta": "Mas… onde está essa tal consciência?",
-    "acoes": ["abrir_porta", "delay 5000", "fechar_porta"]
+    "acoes": ["abrir_porta"]
   },
   {
     "palavras_chave": ["grilo ", "caminho", "precisar"],
