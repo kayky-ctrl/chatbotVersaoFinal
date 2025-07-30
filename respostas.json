@@ -10,17 +10,22 @@
     "acoes": ["abrir_porta", "delay 5000", "fechar_porta"]
   },
   {
+    "palavras_chave": ["grilo ", "caminho", "precisar"],
+    "acoes": ["girar_esquerda","andar_3s","girar_direita"]
+  },
+
+  {
     "palavras_chave": ["robo", "laboratorio", "criações","quebrando"],
     "resposta": "Eu não quebrei seu laboratório!! Não por querer, pelo menos… eu só queria seguir a fada, ela disse que você anda precisando de companhia…"
   },
+
   {
     "palavras_chave": ["preciso", "companhia", "amigos","embora"],
     "resposta": "Ah, agora eu entendi! Você é mal educada! Talvez por isso não tenha amigos."
   },
   {
     "palavras_chave": ["atrevida", "desastrada", "quebra", "tudo", "consertar", "relogios"],
-    "resposta": "Diga aos seus relógios que não me importo com seus tiques e taques! Seu grilo da consciência deve estar dando defeito,  tudo o que você sabe fazer é reclamar.",
-    "acoes": ["girar"]
+    "resposta": "Diga aos seus relógios que não me importo com seus tiques e taques! Seu grilo da consciência deve estar dando defeito,  tudo o que você sabe fazer é reclamar."
   },
   {
     "palavras_chave": ["ensinar", "senhorita", "melhor"],
@@ -40,8 +45,8 @@
   },
   {
     "palavras_chave":["opa", "vamos", "calma"],
-    "resposta": "Tudo bem então kkkkkkkkk",
-    "acoes": ["andar_3s"]
+    "resposta": "Tudo bem então kkkkkkkkk"
+
   },
   {
     "palavras_chave": ["bom", "tarde", "boa noite"],
