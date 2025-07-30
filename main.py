@@ -12,22 +12,23 @@ import os
 import platform
 
 # ==============================================
-# Configurações
+# CONFIGURAÇÕES GLOBAIS
 # ==============================================
-parser = argparse.ArgumentParser()
-parser.add_argument('--porta', type=str, help='Porta serial manual para o Arduino')
+parser = argparse.ArgumentParser(description='Sistema de Controle Robótico por Voz')
+parser.add_argument('--porta', type=str, help='Porta serial manual para o Arduino (ex: COM3 ou /dev/ttyACM0)')
 args = parser.parse_args()
 
+# Parâmetros ajustáveis
 BAUD_RATE = 9600
-TIMEOUT = 0.5
-RECONNECT_INTERVAL = 30
-HEARTBEAT_INTERVAL = 10
-HEARTBEAT_TIMEOUT = 1.0
+SERIAL_TIMEOUT = 0.5
+RECONNECT_INTERVAL = 15  # segundos
+HEARTBEAT_INTERVAL = 8   # segundos
+HEARTBEAT_TIMEOUT = 1.0  # segundos
 HEARTBEAT_RETRIES = 3
-COMMAND_DELAY = 0.1
+COMMAND_DELAY = 0.15     # segundos entre comandos
 
 # ==============================================
-# Sistema de Voz
+# SISTEMA DE VOZ
 # ==============================================
 class VoiceSystem:
     def __init__(self):
@@ -37,6 +38,7 @@ class VoiceSystem:
         
     def _initialize_engine(self):
         try:
+            # Limpeza prévia
             if self.engine:
                 try:
                     self.engine.stop()
@@ -44,6 +46,7 @@ class VoiceSystem:
                 except:
                     pass
 
+            # Configuração específica por SO
             if platform.system() == 'Windows':
                 self.engine = pyttsx3.init(driverName='sapi5')
             elif platform.system() == 'Linux':
@@ -51,9 +54,11 @@ class VoiceSystem:
             else:
                 self.engine = pyttsx3.init()
 
+            # Configurações de voz
             self.engine.setProperty('rate', 150)
             voices = self.engine.getProperty('voices')
             
+            # Seleciona voz em Português
             for voice in voices:
                 if 'portuguese' in voice.languages or 'pt' in voice.id.lower():
                     self.engine.setProperty('voice', voice.id)
@@ -66,17 +71,20 @@ class VoiceSystem:
             print(f"Falha ao inicializar voz (tentativa {self._initialize_count}): {str(e)}")
             return False
     
-    def speak(self, text, max_retries=5):
+    def speak(self, text, max_retries=3):
         for attempt in range(max_retries):
             try:
-                if not self.engine or self._initialize_count > 10:
+                # Reinicializa se necessário
+                if not self.engine or self._initialize_count > 5:
                     if not self._initialize_engine():
                         time.sleep(1)
                         continue
                 
+                # Limpeza de processos no Windows
                 if platform.system() == 'Windows':
                     os.system('taskkill /f /im pythonw.exe 2>nul')
                 
+                # Executa a fala
                 self.engine.say(text)
                 self.engine.runAndWait()
                 return True
@@ -94,10 +102,8 @@ class VoiceSystem:
         print(f"Falha ao falar após {max_retries} tentativas")
         return False
 
-voice_system = VoiceSystem()
-
 # ==============================================
-# Reconhecimento de Voz
+# RECONHECIMENTO DE VOZ
 # ==============================================
 try:
     model = Model("vosk-model-small-pt")
@@ -107,7 +113,7 @@ except Exception as e:
     sys.exit(1)
 
 # ==============================================
-# Controle do Arduino Robustecido
+# CONTROLE DO ARDUINO (ROBUSTO)
 # ==============================================
 class ArduinoController:
     def __init__(self):
@@ -121,55 +127,87 @@ class ArduinoController:
         
     def connect(self, porta_manual=None):
         try:
-            if self.arduino and self.arduino.is_open:
-                self.arduino.close()
-                
+            # Fecha conexão existente
+            self._safe_close()
+            
+            # Lista portas disponíveis para debug
+            print("\n[ARDUINO] Portas disponíveis:")
+            ports = list_ports.comports()
+            for port in ports:
+                print(f" - {port.device}: {port.description}")
+            
+            # Conexão manual
             if porta_manual:
-                try:
-                    self.arduino = serial.Serial(porta_manual, BAUD_RATE, timeout=TIMEOUT)
-                    time.sleep(2)
-                    self._sync_arduino()
-                    self.connection_status = True
-                    self.heartbeat_fail_count = 0
-                    print(f"Conexão estabelecida na porta {porta_manual}")
-                    return True
-                except Exception as e:
-                    print(f"Falha na conexão manual: {e}")
-                    self.connection_status = False
-                    return False
+                print(f"\n[ARDUINO] Tentando conexão manual em {porta_manual}...")
+                return self._connect_to_port(porta_manual)
             
-            portas_possiveis = [
-                p.device for p in list_ports.comports()
-                if any(key in p.description for key in ['Arduino', 'USB', 'ACM'])
-            ]
+            # Conexão automática
+            print("\n[ARDUINO] Tentando conexão automática...")
+            for port in ports:
+                if any(key in port.description for key in ['Arduino', 'USB', 'ACM']):
+                    if self._connect_to_port(port.device):
+                        return True
             
-            for porta in portas_possiveis:
-                try:
-                    self.arduino = serial.Serial(porta, BAUD_RATE, timeout=TIMEOUT)
-                    time.sleep(2)
-                    self._sync_arduino()
-                    self.connection_status = True
-                    self.heartbeat_fail_count = 0
-                    print(f"Conexão estabelecida na porta {porta}")
-                    return True
-                except Exception as e:
-                    print(f"Falha ao conectar na porta {porta}: {e}")
-                    continue
-            
-            self.connection_status = False
+            print("[ARDUINO] Nenhuma porta válida encontrada!")
             return False
+            
         except Exception as e:
-            print(f"Erro geral na conexão: {e}")
-            self.connection_status = False
+            print(f"[ARDUINO] Erro geral na conexão: {str(e)}")
             return False
+    
+    def _connect_to_port(self, port):
+        """Tenta conectar a uma porta específica"""
+        try:
+            self.arduino = serial.Serial(port, BAUD_RATE, timeout=SERIAL_TIMEOUT)
+            time.sleep(2)  # Tempo crítico para inicialização
+            
+            # Sincronização e teste inicial
+            if self._sync_arduino() and self._test_connection():
+                print(f"[ARDUINO] Conectado com sucesso em {port}!")
+                self.connection_status = True
+                self.heartbeat_fail_count = 0
+                return True
+            
+            # Falha no teste de conexão
+            self._safe_close()
+            print(f"[ARDUINO] Conexão em {port} falhou no teste inicial")
+            return False
+            
+        except Exception as e:
+            print(f"[ARDUINO] Falha ao conectar em {port}: {str(e)}")
+            self._safe_close()
+            return False
+    
+    def _safe_close(self):
+        """Fecha a conexão serial com segurança"""
+        if self.arduino:
+            try:
+                self.arduino.close()
+            except:
+                pass
+            self.arduino = None
+        self.connection_status = False
+        time.sleep(1)
     
     def _sync_arduino(self):
         """Sincroniza a comunicação com o Arduino"""
-        self.arduino.write(b"\n")
-        self.arduino.flush()
-        time.sleep(0.1)
-        self.arduino.reset_input_buffer()
-        self.arduino.reset_output_buffer()
+        try:
+            self.arduino.reset_input_buffer()
+            self.arduino.reset_output_buffer()
+            self.arduino.write(b"\n")  # Pulso de sincronização
+            self.arduino.flush()
+            time.sleep(0.1)
+            return True
+        except:
+            return False
+    
+    def _test_connection(self):
+        """Testa a conexão com o Arduino"""
+        for _ in range(3):  # 3 tentativas
+            if self.send_heartbeat():
+                return True
+            time.sleep(0.5)
+        return False
     
     def is_connected(self):
         if self.arduino is None:
@@ -182,7 +220,7 @@ class ArduinoController:
     def send_command_async(self, command):
         with self.lock:
             self.command_queue.append(command)
-            print(f"Comando na fila: {command} (Total: {len(self.command_queue)})")
+            print(f"[ARDUINO] Comando na fila: {command} (Total: {len(self.command_queue)})")
     
     def send_heartbeat(self):
         if not self.is_connected():
@@ -190,9 +228,7 @@ class ArduinoController:
             
         for attempt in range(HEARTBEAT_RETRIES):
             try:
-                self.arduino.reset_input_buffer()
-                self.arduino.reset_output_buffer()
-                
+                self._sync_arduino()
                 self.arduino.write("ping\n".encode())
                 self.arduino.flush()
                 
@@ -204,11 +240,12 @@ class ArduinoController:
                             self.heartbeat_fail_count = 0
                             return True
                 
-                print(f"Heartbeat sem resposta (tentativa {attempt + 1})")
+                print(f"[ARDUINO] Heartbeat sem resposta (tentativa {attempt + 1})")
                 time.sleep(0.1)
                 
             except Exception as e:
-                print(f"Erro no heartbeat (tentativa {attempt + 1}): {e}")
+                print(f"[ARDUINO] Erro no heartbeat: {str(e)}")
+                self._safe_close()
                 time.sleep(0.1)
         
         self.heartbeat_fail_count += 1
@@ -216,11 +253,7 @@ class ArduinoController:
     
     def process_queue(self):
         with self.lock:
-            if not self.command_queue:
-                return
-            
-            if not self.is_connected():
-                print("AVISO: Ignorando fila - sem conexão")
+            if not self.command_queue or not self.is_connected():
                 return
             
             try:
@@ -228,51 +261,43 @@ class ArduinoController:
                 command = self.command_queue.pop(0)
                 self.arduino.write(f"{command}\n".encode())
                 self.arduino.flush()
-                print(f"Comando enviado: {command} (Fila: {len(self.command_queue)})")
+                print(f"[ARDUINO] Comando enviado: {command} (Fila: {len(self.command_queue)})")
                 time.sleep(COMMAND_DELAY)
                 
             except Exception as e:
-                print(f"ERRO ao enviar comando: {e}")
-                self._handle_serial_error()
-    
-    def _handle_serial_error(self):
-        """Trata erros na comunicação serial"""
-        try:
-            self.arduino.close()
-        except:
-            pass
-        self.arduino = None
-        self.connection_status = False
-    
-    def try_reconnect(self):
-        now = time.time()
-        if now - self.last_connection_attempt > RECONNECT_INTERVAL:
-            self.last_connection_attempt = now
-            if not self.is_connected():
-                print("Tentando reconectar ao Arduino...")
-                self.connect(args.porta)
+                print(f"[ARDUINO] ERRO ao enviar comando: {str(e)}")
+                self._safe_close()
     
     def check_connection(self):
         now = time.time()
         if now - self.last_heartbeat > HEARTBEAT_INTERVAL:
             self.last_heartbeat = now
+            
             if not self.send_heartbeat():
-                print("AVISO: Heartbeat falhou - verificando conexão...")
+                print("[ARDUINO] Heartbeat falhou - verificando conexão...")
                 self.connection_status = False
-                if self.heartbeat_fail_count > 2:
+                
+                if self.heartbeat_fail_count >= 3:
+                    print("[ARDUINO] Tentando reconexão...")
                     self.try_reconnect()
             else:
                 self.connection_status = True
+    
+    def try_reconnect(self):
+        now = time.time()
+        if now - self.last_connection_attempt > RECONNECT_INTERVAL:
+            self.last_connection_attempt = now
+            self.connect(args.porta)
 
 # ==============================================
-# Funções Auxiliares
+# FUNÇÕES AUXILIARES
 # ==============================================
 def carregar_dialogos():
     try:
         with open("respostas.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"ERRO CRÍTICO: {e}")
+        print(f"ERRO CRÍTICO: Não foi possível carregar respostas.json - {str(e)}")
         sys.exit(1)
 
 def encontrar_resposta(fala, dialogos):
@@ -283,41 +308,42 @@ def encontrar_resposta(fala, dialogos):
     return None
 
 # ==============================================
-# Loop Principal
+# LOOP PRINCIPAL
 # ==============================================
 def main():
+    # Inicializa sistemas
+    voice_system = VoiceSystem()
     arduino = ArduinoController()
-    if not arduino.connect(args.porta):
-        print("AVISO: Não foi possível conectar ao Arduino inicialmente - continuando em modo sem movimentos")
-    
     dialogos = carregar_dialogos()
 
+    # Configura áudio
     p = pyaudio.PyAudio()
     stream = p.open(
         format=pyaudio.paInt16,
         channels=1,
         rate=16000,
         input=True,
-        frames_per_buffer=8192
+        frames_per_buffer=8192,
+        stream_callback=lambda *args: None
     )
 
-    print("\n🎭 SISTEMA PRONTO - Diga 'desligar' para sair 🎭")
+    print("\n🔊 SISTEMA PRONTO - Diga 'desligar' para sair 🔊")
     last_status_print = time.time()
 
     try:
         while True:
             try:
-                # Gerenciar conexão com Arduino
+                # Gerenciamento de conexão
                 arduino.check_connection()
                 arduino.process_queue()
                 
-                # Log de status periódico
+                # Status periódico
                 if time.time() - last_status_print > 30:
                     last_status_print = time.time()
-                    status = "ATIVA" if arduino.connection_status else "INATIVA"
-                    print(f"\n[STATUS] Conexão: {status} | Fila: {len(arduino.command_queue)}")
+                    status = "✅ ATIVA" if arduino.connection_status else "❌ INATIVA"
+                    print(f"\n[STATUS] Conexão Arduino: {status} | Fila: {len(arduino.command_queue)}")
                 
-                # Processar áudio
+                # Processamento de voz
                 data = stream.read(4096, exception_on_overflow=False)
                 
                 if recognizer.AcceptWaveform(data):
@@ -325,16 +351,16 @@ def main():
                     
                     if 'text' in result and result['text']:
                         fala = result['text']
-                        print(f"\n👂 Você disse: {fala}")
+                        print(f"\n🎤 Você disse: {fala}")
                         
                         dialogo = encontrar_resposta(fala, dialogos)
                         if dialogo:
                             resposta = dialogo.get("resposta", "Não entendi...")
                             print(f"🤖 Resposta: {resposta}")
                             
-                            if not voice_system.speak(resposta):
-                                print("⚠️ A resposta não pôde ser falada")
+                            voice_system.speak(resposta)
                             
+                            # Processa ações
                             acoes = dialogo.get("acoes", [])
                             if isinstance(acoes, str):
                                 acoes = [acoes]
@@ -344,14 +370,14 @@ def main():
                                 time.sleep(COMMAND_DELAY)
                             
                             if "desligar" in fala.lower():
-                                print("Recebido comando para desligar...")
+                                print("🛑 Comando de desligamento recebido...")
                                 break
                                 
             except KeyboardInterrupt:
-                print("\nInterrupção pelo teclado detectada...")
+                print("\n🛑 Interrupção pelo teclado detectada...")
                 break
             except Exception as e:
-                print(f"⚠️ Erro temporário: {e}")
+                print(f"⚠️ Erro temporário: {str(e)}")
                 time.sleep(0.1)
                 
     finally:
@@ -359,12 +385,8 @@ def main():
         stream.stop_stream()
         stream.close()
         p.terminate()
-        if arduino.is_connected():
-            try:
-                arduino.arduino.close()
-            except:
-                pass
-        print("✅ Sistema encerrado corretamente.")
+        arduino._safe_close()
+        print("✅ Sistema encerrado corretamente.\n")
 
 if __name__ == "__main__":
     main()
