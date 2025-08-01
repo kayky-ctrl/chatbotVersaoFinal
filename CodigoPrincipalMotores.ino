@@ -52,19 +52,15 @@ void loop() {
     } else if (comando == "mover_tras") {
       moverTras(2000);  // Move para trás por 2 segundos
     } else if (comando == "girar_direita") {
-      girarDireita(3000);  // Gira para direita por 1 segundo
+      girarDireita(2500);  // Gira para direita por 1 segundo
     } else if (comando == "girar_esquerda") {
-      girarEsquerda(3000);  // Gira para esquerda por 1 segundo
+      girarEsquerda(2000);  // Gira para esquerda por 1 segundo
     } else if (comando == "abrir_porta") {
       abrirPorta();  // Abre a porta (servo motor)
     } else if (comando == "fechar_porta") {
       fecharPorta();  // Fecha a porta (servo motor)
     } else if (comando == "andar_3s") {
-      moverFrente(5000);  // Move para frente por 3 segundos
-    } else if (comando == "passos_frente") {
-      pequenosPassos(50, 1);  // 50 passos para frente
-    } else if (comando == "passos_tras") {
-      pequenosPassos(50, -1);  // 50 passos para trás
+      moverFrente(3000);  // Move para frente por 3 segundos
     }
   }
 }
@@ -126,8 +122,8 @@ void girarDireita(unsigned long tempo) {
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   // Motores em direções opostas para girar
-  digitalWrite(dir, HIGH);
-  digitalWrite(dir2, HIGH);
+  digitalWrite(dir, LOW);
+  digitalWrite(dir2, LOW);
 
   unsigned long inicio = millis();
   while (millis() - inicio < tempo) {
@@ -149,8 +145,8 @@ void girarEsquerda(unsigned long tempo) {
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   // Motores em direções opostas
-  digitalWrite(dir, LOW);
-  digitalWrite(dir2, LOW);
+  digitalWrite(dir, HIGH);
+  digitalWrite(dir2, HIGH);
 
   unsigned long inicio = millis();
   while (millis() - inicio < tempo) {
