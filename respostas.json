@@ -11,11 +11,12 @@
   },
   {
     "palavras_chave": ["grilo ", "caminho", "precisar"],
-    "acoes": ["girar_esquerda","andar_3s","girar_direita"]
+    "acoes": ["fechar_porta","girar_esquerda","andar_3s"]
   },
 
   {
     "palavras_chave": ["robo", "laboratorio", "criações","quebrando"],
+    "acoes":["girar_direita"],
     "resposta": "Eu não quebrei seu laboratório!! Não por querer, pelo menos… eu só queria seguir a fada, ela disse que você anda precisando de companhia…"
   },
 
@@ -56,5 +57,12 @@
     "palavras_chave": ["ajustar", "ajustar porta", "porta"],
     "resposta": "Ajustando porta",
     "acoes": ["ajustar_porta"]
+  },
+  {
+    
+    "palavras_chave":["passos"],
+    "resposta":"motor mexendo",
+    "acoes": ["passos_frente"]
+  
   }
 ]
