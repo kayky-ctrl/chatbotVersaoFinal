@@ -56,10 +56,5 @@
     "palavras_chave": ["ajustar", "ajustar porta", "porta"],
     "resposta": "Ajustando porta",
     "acoes": ["ajustar_porta"]
-  },
-  {
-    "palavras_chave":["passos"],
-    "resposta":"motor mexendo",
-    "acoes": ["passos_frente"]
   }
 ]
