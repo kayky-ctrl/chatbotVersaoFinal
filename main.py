@@ -1,39 +1,46 @@
-from vosk import Model, KaldiRecognizer
-import pyaudio
-import json
-import pyttsx3
-import serial
-import time
-from serial.tools import list_ports
-import sys
-import argparse
-import threading
-import os
-import platform
+# ==============================================
+# IMPORTAÇÕES
+# ==============================================
+from vosk import Model, KaldiRecognizer  # Reconhecimento de voz offline
+import pyaudio  # Captura de áudio do microfone
+import json  # Manipulação de arquivos JSON
+import pyttsx3  # Síntese de voz (TTS)
+import serial  # Comunicação serial com Arduino
+import time  # Controle de tempo e delays
+from serial.tools import list_ports  # Listar portas seriais disponíveis
+import sys  # Sistema e saída de erros
+import argparse  # Parsing de argumentos de linha de comando
+import threading  # Processamento assíncrono
+import os  # Operações do sistema
+import platform  # Identificação do sistema operacional
 
 # ==============================================
-# Configurações
+# CONFIGURAÇÕES GLOBAIS
 # ==============================================
+# Configuração do parser de argumentos de linha de comando
 parser = argparse.ArgumentParser()
 parser.add_argument('--porta', type=str, help='Porta serial manual para o Arduino')
 args = parser.parse_args()
 
-BAUD_RATE = 9600
-TIMEOUT = 0.5
-RECONNECT_INTERVAL = 30
+# Constantes de configuração
+BAUD_RATE = 9600  # Velocidade de comunicação serial
+TIMEOUT = 0.5  # Timeout para comunicação serial
+RECONNECT_INTERVAL = 30  # Intervalo para tentar reconexão (segundos)
 HEARTBEAT_INTERVAL = 10  # Intervalo para verificar conexão com Arduino
 
 # ==============================================
-# Sistema de Voz Ultra-Robusto
+# SISTEMA DE VOZ (TTS - TEXT TO SPEECH)
 # ==============================================
 class VoiceSystem:
     def __init__(self):
-        self.engine = None
-        self._initialize_count = 0
-        self._initialize_engine()
+        self.engine = None  # Motor de síntese de voz
+        self._initialize_count = 0  # Contador de tentativas de inicialização
+        self._initialize_engine()  # Inicializa o motor na criação
         
     def _initialize_engine(self):
+        """Inicializa o motor de síntese de voz com configurações específicas por plataforma"""
         try:
+            # Limpeza segura do motor existente
             if self.engine:
                 try:
                     self.engine.stop()
@@ -41,16 +48,19 @@ class VoiceSystem:
                 except:
                     pass
 
+            # Configuração específica por sistema operacional
             if platform.system() == 'Windows':
-                self.engine = pyttsx3.init(driverName='sapi5')
+                self.engine = pyttsx3.init(driverName='sapi5')  # Usa SAPI5 no Windows
             elif platform.system() == 'Linux':
-                self.engine = pyttsx3.init(driverName='espeak')
+                self.engine = pyttsx3.init(driverName='espeak')  # Usa eSpeak no Linux
             else:
-                self.engine = pyttsx3.init()
+                self.engine = pyttsx3.init()  # Configuração padrão para outros sistemas
 
-            self.engine.setProperty('rate', 150)
+            # Configurações de voz
+            self.engine.setProperty('rate', 150)  # Velocidade da fala
             voices = self.engine.getProperty('voices')
             
+            # Seleciona voz em português se disponível
             for voice in voices:
                 if 'portuguese' in voice.languages or 'pt' in voice.id.lower():
                     self.engine.setProperty('voice', voice.id)
@@ -64,16 +74,20 @@ class VoiceSystem:
             return False
     
     def speak(self, text, max_retries=5):
+        """Sintetiza o texto em fala com múltiplas tentativas e tratamento de erros"""
         for attempt in range(max_retries):
             try:
+                # Reinicializa se necessário
                 if not self.engine or self._initialize_count > 10:
                     if not self._initialize_engine():
                         time.sleep(1)
                         continue
                 
+                # Limpeza de processos no Windows
                 if platform.system() == 'Windows':
                     os.system('taskkill /f /im pythonw.exe 2>nul')
                 
+                # Sintetiza e reproduz a fala
                 self.engine.say(text)
                 self.engine.runAndWait()
                 return True
@@ -91,32 +105,36 @@ class VoiceSystem:
         print(f"Falha definitiva ao falar após {max_retries} tentativas")
         return False
 
+# Instância global do sistema de voz
 voice_system = VoiceSystem()
 
 # ==============================================
-# Reconhecimento de Voz
+# RECONHECIMENTO DE VOZ (STT - SPEECH TO TEXT)
 # ==============================================
 try:
+    # Carrega o modelo de reconhecimento de voz em português
     model = Model("vosk-model-small-pt")
-    recognizer = KaldiRecognizer(model, 16000)
+    recognizer = KaldiRecognizer(model, 16000)  # Configura para taxa de amostragem de 16kHz
 except Exception as e:
     print(f"ERRO: Não foi possível carregar o modelo de voz.\nErro: {e}")
-    sys.exit(1)
+    sys.exit(1)  # Encerra o programa se não carregar o modelo
 
 # ==============================================
-# Controle do Arduino Aprimorado
+# CONTROLE DO ARDUINO (COMUNICAÇÃO SERIAL)
 # ==============================================
 class ArduinoController:
     def __init__(self):
-        self.arduino = None
-        self.last_connection_attempt = 0
-        self.last_heartbeat = 0
-        self.command_queue = []
-        self.lock = threading.Lock()
-        self.connection_status = False
+        self.arduino = None  # Objeto de conexão serial
+        self.last_connection_attempt = 0  # Última tentativa de conexão
+        self.last_heartbeat = 0  # Último heartbeat
+        self.command_queue = []  # Fila de comandos pendentes
+        self.lock = threading.Lock()  # Lock para thread-safe
+        self.connection_status = False  # Status atual da conexão
         
     def connect(self, porta_manual=None):
+        """Tenta conectar ao Arduino, priorizando porta manual se fornecida"""
         try:
+            # Tentativa de conexão manual
             if porta_manual:
                 try:
                     self.arduino = serial.Serial(porta_manual, BAUD_RATE, timeout=TIMEOUT)
@@ -128,11 +146,13 @@ class ArduinoController:
                     print(f"Falha na conexão manual: {e}")
                     self.connection_status = False
             
+            # Busca automática por portas possíveis
             portas_possiveis = [
                 p.device for p in list_ports.comports()
                 if any(key in p.description for key in ['Arduino', 'USB', 'ACM'])
             ]
             
+            # Tenta conectar em cada porta disponível
             for porta in portas_possiveis:
                 try:
                     self.arduino = serial.Serial(porta, BAUD_RATE, timeout=TIMEOUT)
@@ -152,6 +172,7 @@ class ArduinoController:
             return False
     
     def is_connected(self):
+        """Verifica se a conexão está ativa"""
         if self.arduino is None:
             return False
         try:
@@ -160,11 +181,13 @@ class ArduinoController:
             return False
     
     def send_command_async(self, command):
+        """Adiciona comando à fila de processamento (thread-safe)"""
         with self.lock:
             self.command_queue.append(command)
             print(f"Comando adicionado à fila: {command} (Tamanho da fila: {len(self.command_queue)})")
     
     def send_heartbeat(self):
+        """Envia sinal de vida para verificar conexão"""
         if self.is_connected():
             try:
                 self.arduino.write("ping\n".encode())
@@ -178,6 +201,7 @@ class ArduinoController:
         return False
     
     def process_queue(self):
+        """Processa o próximo comando na fila (thread-safe)"""
         with self.lock:
             if not self.command_queue:
                 return
@@ -191,12 +215,12 @@ class ArduinoController:
                 self.arduino.reset_input_buffer()
                 self.arduino.reset_output_buffer()
                 
+                # Remove e envia o próximo comando
                 command = self.command_queue.pop(0)
                 self.arduino.write(f"{command}\n".encode())
                 print(f"Comando enviado: {command} (Fila restante: {len(self.command_queue)})")
                 
-                # Pequena pausa para garantir processamento
-                time.sleep(0.1)
+                time.sleep(0.1)  # Pequena pausa para garantir processamento
                 
             except Exception as e:
                 print(f"ERRO ao enviar comando: {e}")
@@ -208,6 +232,7 @@ class ArduinoController:
                 self.connection_status = False
     
     def try_reconnect(self):
+        """Tenta reconectar após intervalo configurado"""
         now = time.time()
         if now - self.last_connection_attempt > RECONNECT_INTERVAL:
             self.last_connection_attempt = now
@@ -216,6 +241,7 @@ class ArduinoController:
                 self.connect(args.porta)
     
     def check_connection(self):
+        """Verifica a conexão periodicamente com heartbeat"""
         now = time.time()
         if now - self.last_heartbeat > HEARTBEAT_INTERVAL:
             self.last_heartbeat = now
@@ -227,9 +253,10 @@ class ArduinoController:
                 self.connection_status = True
 
 # ==============================================
-# Funções Auxiliares
+# FUNÇÕES AUXILIARES
 # ==============================================
 def carregar_dialogos():
+    """Carrega os diálogos e respostas do arquivo JSON"""
     try:
         with open("respostas.json", "r", encoding="utf-8") as f:
             return json.load(f)
@@ -238,6 +265,7 @@ def carregar_dialogos():
         sys.exit(1)
 
 def encontrar_resposta(fala, dialogos):
+    """Encontra a resposta adequada para o texto reconhecido"""
     fala = fala.lower()
     for dialogo in dialogos:
         if any(palavra.lower() in fala for palavra in dialogo.get("palavras_chave", [])):
@@ -245,15 +273,18 @@ def encontrar_resposta(fala, dialogos):
     return None
 
 # ==============================================
-# Loop Principal Aprimorado
+# LOOP PRINCIPAL
 # ==============================================
 def main():
+    # Inicializa controlador do Arduino
     arduino = ArduinoController()
     if not arduino.connect(args.porta):
         print("AVISO: Não foi possível conectar ao Arduino inicialmente - continuando em modo sem movimentos")
     
+    # Carrega diálogos
     dialogos = carregar_dialogos()
 
+    # Configura captura de áudio
     p = pyaudio.PyAudio()
     stream = p.open(
         format=pyaudio.paInt16,
@@ -282,6 +313,7 @@ def main():
                 # Processar áudio
                 data = stream.read(4096, exception_on_overflow=False)
                 
+                # Reconhece fala
                 if recognizer.AcceptWaveform(data):
                     result = json.loads(recognizer.Result())
                     
@@ -289,14 +321,17 @@ def main():
                         fala = result['text']
                         print(f"\n👂 Você disse: {fala}")
                         
+                        # Encontra resposta adequada
                         dialogo = encontrar_resposta(fala, dialogos)
                         if dialogo:
                             resposta = dialogo.get("resposta", "Não entendi...")
                             print(f"🤖 Resposta: {resposta}")
                             
+                            # Sintetiza resposta em voz
                             if not voice_system.speak(resposta):
                                 print("⚠️ A resposta não pôde ser falada, mas o sistema continua funcionando")
                             
+                            # Processa ações associadas
                             acoes = dialogo.get("acoes", [])
                             if isinstance(acoes, str):
                                 acoes = [acoes]
@@ -305,6 +340,7 @@ def main():
                                 arduino.send_command_async(acao)
                                 time.sleep(0.1)  # Pequena pausa entre comandos
                             
+                            # Comando especial para desligar
                             if "desligar" in fala.lower():
                                 print("Recebido comando para desligar...")
                                 break
@@ -317,6 +353,7 @@ def main():
                 time.sleep(0.1)
                 
     finally:
+        # Rotina de encerramento
         print("\n🧹 Encerrando sistema...")
         stream.stop_stream()
         stream.close()
@@ -328,5 +365,6 @@ def main():
                 pass
         print("✅ Sistema encerrado corretamente.")
 
+# Ponto de entrada do programa
 if __name__ == "__main__":
     main()
