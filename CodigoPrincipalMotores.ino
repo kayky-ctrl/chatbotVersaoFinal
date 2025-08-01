@@ -54,16 +54,16 @@ void loop() {
     Serial.println(comando);
     
     if (comando == "mover_frente") {
-      moverFrente(2000);
+      moverFrente(3000);
     } 
     else if (comando == "mover_tras") {
-      moverTras(2000);
+      moverTras(3000);
     } 
     else if (comando == "girar_direita") {
-      girarDireita(1000);
+      girarDireita(6000);
     }
     else if (comando == "girar_esquerda") {
-      girarEsquerda(1000);
+      girarEsquerda(3000);
     }
     else if (comando == "abrir_porta") {
       abrirPorta();
@@ -72,7 +72,7 @@ void loop() {
       fecharPorta();
     }
     else if (comando == "andar_3s") {
-      moverFrente(3000);
+      moverFrente(8000);
     }
   }
 }
@@ -93,10 +93,10 @@ void moverFrente(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(900); // Aumentado para 1ms
+    delayMicroseconds(1000); // Aumentado para 1ms
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(900);
+    delayMicroseconds(1000);
   }
   
   // Desabilitar os motores
@@ -120,10 +120,10 @@ void moverTras(unsigned long tempo) {
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(900);
+    delayMicroseconds(1000);
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
-    delayMicroseconds(900);
+    delayMicroseconds(1000);
   }
   
   // Desabilitar os motores
@@ -138,8 +138,8 @@ void girarDireita(unsigned long tempo) {
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   
-  // Configurar direções opostas para girar
-  digitalWrite(dir, HIGH);   // Motor 1 para frente
+  // Configurar direções opostas para girarp
+  digitalWrite(dir, LOW);   // Motor 1 para frente
   digitalWrite(dir2, LOW);   // Motor 2 para trás
   
   // Gerar pulsos por 'tempo' milissegundos
@@ -166,7 +166,7 @@ void girarEsquerda(unsigned long tempo) {
   digitalWrite(ena2, HIGH);
   
   // Configurar direções opostas para girar
-  digitalWrite(dir, LOW);   // Motor 1 para trás
+  digitalWrite(dir, HIGH);   // Motor 1 para trás
   digitalWrite(dir2, HIGH);   // Motor 2 para frente
   
   // Gerar pulsos por 'tempo' milissegundos
