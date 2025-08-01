@@ -52,15 +52,15 @@ void loop() {
     } else if (comando == "mover_tras") {
       moverTras(2000);  // Move para trás por 2 segundos
     } else if (comando == "girar_direita") {
-      girarDireita(1000);  // Gira para direita por 1 segundo
+      girarDireita(3000);  // Gira para direita por 1 segundo
     } else if (comando == "girar_esquerda") {
-      girarEsquerda(1000);  // Gira para esquerda por 1 segundo
+      girarEsquerda(3000);  // Gira para esquerda por 1 segundo
     } else if (comando == "abrir_porta") {
       abrirPorta();  // Abre a porta (servo motor)
     } else if (comando == "fechar_porta") {
       fecharPorta();  // Fecha a porta (servo motor)
     } else if (comando == "andar_3s") {
-      moverFrente(3000);  // Move para frente por 3 segundos
+      moverFrente(5000);  // Move para frente por 3 segundos
     } else if (comando == "passos_frente") {
       pequenosPassos(50, 1);  // 50 passos para frente
     } else if (comando == "passos_tras") {
