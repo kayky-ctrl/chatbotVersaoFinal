@@ -1,22 +1,34 @@
-    #include <Servo.h>
+#include <Servo.h>
 
-// Definindo os pinos dos motores
-const int ena = 2;
-const int dir = 3;
-const int pul = 4;
+// =============================================
+// DEFINIÇÃO DE PINOS
+// =============================================
 
-const int ena2 = 5;
-const int dir2 = 6;
-const int pul2 = 7;
+// Pinos do primeiro motor
+const int ena = 2;   // Pino de habilitação do motor 1
+const int dir = 3;    // Pino de direção do motor 1
+const int pul = 4;    // Pino de pulso do motor 1
 
-// Definindo o pino do servo
-const int servoPin = 22;
+// Pinos do segundo motor
+const int ena2 = 5;   // Pino de habilitação do motor 2
+const int dir2 = 6;   // Pino de direção do motor 2
+const int pul2 = 7;   // Pino de pulso do motor 2
 
-// Criando objeto do servo
-Servo myServo;
+// Pino do servo motor
+const int servoPin = 22;  // Pino de controle do servo
+
+// =============================================
+// OBJETOS
+// =============================================
+
+Servo myServo;  // Objeto para controle do servo motor
+
+// =============================================
+// CONFIGURAÇÃO INICIAL
+// =============================================
 
 void setup() {
-  // Configurando os pinos dos motores como saída
+  // Configuração dos pinos dos motores como saída
   pinMode(ena, OUTPUT);
   pinMode(dir, OUTPUT);
   pinMode(pul, OUTPUT);
@@ -25,34 +37,41 @@ void setup() {
   pinMode(dir2, OUTPUT);
   pinMode(pul2, OUTPUT);
 
+  // Configuração inicial do pino do servo
   pinMode(servoPin, INPUT);
   digitalWrite(servoPin, LOW);
-  // Configurando o servo
+  
+  // Inicialização do servo motor
   delay(100);
   myServo.attach(servoPin);
   delay(100);
-  myServo.write(-60); // Inicia com a porta fechada
+  myServo.write(-60);  // Posição inicial com a porta fechada
   delay(500);
   
-  // Iniciando com os motores desabilitados (verificar se LOW ou HIGH habilita no seu driver)
+  // Desabilita os motores inicialmente
   digitalWrite(ena, LOW);  
   digitalWrite(ena2, LOW);
   
-  // Iniciando comunicação serial
+  // Inicia a comunicação serial
   Serial.begin(9600);
   Serial.println("Sistema iniciado - Motores parados");
 }
 
+// =============================================
+// LOOP PRINCIPAL
+// =============================================
+
 void loop() {
-
-
+  // Verifica se há comandos disponíveis na serial
   if (Serial.available() > 0) {
     String comando = Serial.readStringUntil('\n');
     comando.trim();
     
+    // Exibe o comando recebido
     Serial.print("Comando recebido: ");
     Serial.println(comando);
     
+    // Executa o comando correspondente
     if (comando == "mover_frente") {
       moverFrente(3000);
     } 
@@ -77,45 +96,51 @@ void loop() {
   }
 }
 
+// =============================================
+// FUNÇÕES DE MOVIMENTAÇÃO
+// =============================================
+
+// Move o robô para frente pelo tempo especificado
 void moverFrente(unsigned long tempo) {
   Serial.println("Movendo para frente");
   
-  // Habilitar os motores
+  // Habilita os motores
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   
-  // Configurar direção para frente
+  // Configura a direção para frente
   digitalWrite(dir, HIGH);
   digitalWrite(dir2, LOW);
   
-  // Gerar pulsos por 'tempo' milissegundos
+  // Gera pulsos pelo tempo especificado
   unsigned long inicio = millis();
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
     digitalWrite(pul2, HIGH);
-    delayMicroseconds(1000); // Aumentado para 1ms
+    delayMicroseconds(1000);
     digitalWrite(pul, LOW);
     digitalWrite(pul2, LOW);
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
+  // Desabilita os motores
   digitalWrite(ena, LOW);
   digitalWrite(ena2, LOW);
 }
 
+// Move o robô para trás pelo tempo especificado
 void moverTras(unsigned long tempo) {
   Serial.println("Movendo para trás");
   
-  // Habilitar os motores
+  // Habilita os motores
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   
-  // Configurar direção para trás
+  // Configura a direção para trás
   digitalWrite(dir, LOW);
   digitalWrite(dir2, HIGH);
   
-  // Gerar pulsos por 'tempo' milissegundos
+  // Gera pulsos pelo tempo especificado
   unsigned long inicio = millis();
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
@@ -126,23 +151,24 @@ void moverTras(unsigned long tempo) {
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
+  // Desabilita os motores
   digitalWrite(ena, LOW);
   digitalWrite(ena2, LOW);
 }
 
+// Gira o robô para direita pelo tempo especificado
 void girarDireita(unsigned long tempo) {
   Serial.println("Girando para direita");
   
-  // Habilitar os motores
+  // Habilita os motores
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   
-  // Configurar direções opostas para girarp
+  // Configura direções opostas para girar
   digitalWrite(dir, LOW);   // Motor 1 para frente
-  digitalWrite(dir2, LOW);   // Motor 2 para trás
+  digitalWrite(dir2, LOW);  // Motor 2 para trás
   
-  // Gerar pulsos por 'tempo' milissegundos
+  // Gera pulsos pelo tempo especificado
   unsigned long inicio = millis();
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
@@ -153,23 +179,24 @@ void girarDireita(unsigned long tempo) {
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
+  // Desabilita os motores
   digitalWrite(ena, LOW);
   digitalWrite(ena2, LOW);
 }
 
+// Gira o robô para esquerda pelo tempo especificado
 void girarEsquerda(unsigned long tempo) {
   Serial.println("Girando para esquerda");
   
-  // Habilitar os motores
+  // Habilita os motores
   digitalWrite(ena, HIGH);
   digitalWrite(ena2, HIGH);
   
-  // Configurar direções opostas para girar
+  // Configura direções opostas para girar
   digitalWrite(dir, HIGH);   // Motor 1 para trás
-  digitalWrite(dir2, HIGH);   // Motor 2 para frente
+  digitalWrite(dir2, HIGH);  // Motor 2 para frente
   
-  // Gerar pulsos por 'tempo' milissegundos
+  // Gera pulsos pelo tempo especificado
   unsigned long inicio = millis();
   while(millis() - inicio < tempo) {
     digitalWrite(pul, HIGH);
@@ -180,26 +207,29 @@ void girarEsquerda(unsigned long tempo) {
     delayMicroseconds(1000);
   }
   
-  // Desabilitar os motores
+  // Desabilita os motores
   digitalWrite(ena, LOW);
   digitalWrite(ena2, LOW);
 }
 
+// =============================================
+// FUNÇÕES DO SERVO MOTOR (PORTA)
+// =============================================
+
+// Abre a porta gradualmente
 void abrirPorta() {
   Serial.println("Abrindo porta");
-  for(int pos = 0; pos <= 100; pos += 1) { // Movimento suave
+  for(int pos = 0; pos <= 100; pos += 1) {
     myServo.write(pos);
     delay(15);
   }
 }
 
+// Fecha a porta gradualmente
 void fecharPorta() {
   Serial.println("Fechando porta");
-  for(int pos = 90; pos >= 0; pos -= 1) { // Movimento suave
+  for(int pos = 90; pos >= 0; pos -= 1) {
     myServo.write(pos);
     delay(15);
   }
 }
-
-
-
