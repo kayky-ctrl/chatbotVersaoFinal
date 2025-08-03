@@ -112,3 +112,5 @@ for i in range(p.get_device_count()):
 📌 **Mantenha contato:**  
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/kayky-de-paula-3053a5326/)
 [![Instagram](https://img.shields.io/badge/Instagram-1DA1F2?style=flat&logo=instagram)](https://www.instagram.com/ntkayky/)
+Licença
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
