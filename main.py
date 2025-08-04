@@ -307,6 +307,7 @@ def main():
                 # Print status periódico para debug
                 if time.time() - last_status_print > 30:
                     last_status_print = time.time()
+                    print(f"\n[STATUS] Conexão Arduino: {'ATIVA' if arduino.connection_status else 'INATIVA'}")
                     print(f"[STATUS] Comandos na fila: {len(arduino.command_queue)}")
                 
                 # Processar áudio
